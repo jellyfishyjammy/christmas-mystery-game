@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖誕夜的消失齒輪 - 導演最終版</title>
+    <style>
+        /* --- 視覺風格 --- */
+        body {
+            background-color: #050510;
+            color: #e0e0e0;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+        }
+
+        #game-container {
+            width: 1100px;
+            height: 700px;
+            background-color: rgba(30, 30, 35, 0.95);
+            border: 1px solid #444;
+            border-radius: 16px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            display: flex;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #visual-panel {
+            flex: 6;
+            position: relative;
+            background-color: #111;
+            background-size: cover;
+            background-position: center;
+            border-right: 2px solid #222;
+            transition: background-image 0.5s ease;
+        }
+
+        .overlay-gradient {
+            position: absolute;
+            bottom: 0; left: 0; right: 0; height: 120px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            pointer-events: none;
+        }
+
+        #narrative-panel {
+            flex: 4;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e24;
+        }
+
+        #header-bar {
+            padding: 20px;
+            background: #15151a;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #scene-title { margin: 0; color: #d4af37; font-size: 20px; font-weight: bold; letter-spacing: 1px;
+        }
+
+        #feedback-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background-color: #25252b;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
+        }
+        #feedback-area::-webkit-scrollbar { width: 8px;
+        }
+        #feedback-area::-webkit-scrollbar-track { background: #222;
+        }
+        #feedback-area::-webkit-scrollbar-thumb { background: #444; border-radius: 4px;
+        }
+
+        .bubble {
+            max-width: 90%;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-size: 16px;
+            line-height: 1.6;
+            position: relative;
+            animation: slideUp 0.5s ease-out;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            word-wrap: break-word;
+        }
+
+        .bubble-system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: #bbb;
+            font-size: 15px;
+            text-align: center;
+            border: 1px dashed #444;
+            width: 95%;
+        }
+
+        .bubble-char {
+            align-self: flex-start;
+            background: #33333a;
+            color: #fff;
+            border-bottom-left-radius: 2px;
+            border-left: 4px solid #888;
+        }
+        .char-name { font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #888;
+        }
+
+        .char-spark { border-left-color: #d40 !important;
+        }
+        .char-spark .char-name { color: #d40 !important;
+        }
+
+        .char-cookie { border-left-color: #da0 !important;
+        }
+        .char-cookie .char-name { color: #da0 !important;
+        }
+
+        .char-rudolph { border-left-color: #0a4 !important;
+        }
+        .char-rudolph .char-name { color: #0a4 !important;
+        }
+
+        .char-barnaby { border-left-color: #b4f !important;
+        }
+        .char-barnaby .char-name { color: #b4f !important;
+        }
+
+        .bubble-player {
+            align-self: flex-end;
+            background: #4a6fa5;
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+        
+        .bubble-santa {
+            background: #800;
+            color: #fff;
+            border: 2px solid #d40;
+            align-self: center;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .bubble-drama {
+            background: #111;
+            color: #ff3333;
+            border: 1px solid #ff3333;
+            align-self: center;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .bubble-mystery {
+            align-self: center;
+            background: #e0e0e0;
+            color: #111;
+            border: 2px solid #fff;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideUp { from { opacity: 0;
+            transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #interaction-bar {
+            padding: 20px;
+            background: #18181d;
+            border-top: 1px solid #333;
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .choice-btn {
+            background: linear-gradient(135deg, #2d2d35 0%, #25252b 100%);
+            color: #e0e0e0;
+            border: 1px solid #444;
+            padding: 12px 15px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .choice-btn:hover {
+            background: #383840;
+            border-color: #d4af37;
+            color: #d4af37;
+            transform: translateX(5px);
+        }
+        
+        .replay-btn {
+            background: linear-gradient(135deg, #115511 0%, #004400 100%);
+            border-color: #4ecdc4;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .hotspot {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            color: #ffd700;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .hotspot:hover {
+            transform: scale(1.1);
+            background: #ffd700;
+            color: #000;
+        }
+        
+        .profile-content { text-align: left;
+            line-height: 1.8; }
+        .hidden { display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="visual-panel">
+        <div class="overlay-gradient"></div>
+    </div>
+
+    <div id="narrative-panel">
+        <div id="header-bar">
+            <h2 id="scene-title">系統啟動中...</h2>
+            <div style="font-size:13px; color:#888;">🎒 狀態: <span id="game-status" style="color:#4ecdc4">搜查中</span></div>
+        </div>
+
+        <div id="feedback-area"></div>
+        <div id="interaction-bar"></div>
+    </div>
+</div>
+
+<script>
+  
+    // --- 1. 初始化 ---
+    let audioCtx = null;
+    function playSound(type) {
+        if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch(e){} }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    // --- 2. 遊戲資料 ---
+    
+    let gameState = {
+        visited: new Set(),
+        usedActions: new Set(),
+        currentScene: '',
+        sceneLogs: {}, 
+        wrongAccusationCount: 0,
+        lastAccused: null 
+    };
+    const contentData = {
+        profiles: {
+            spark: `
+                <div class="profile-content" style="border-left:4px solid #d40; padding-left:10px;">
+                <b>【史派克 Spark】</b><br>
+                🔧 <b>職業：</b> 精靈發明家<br>
+                📏 <b>身高：</b> 35 顆螺絲帽高<br>
+                📋 <b>狀態：</b> 滿身機油，正在敲打機械。<br>
+                </div>`,
+            cookie: `
+                <div class="profile-content" style="border-left:4px solid #da0; padding-left:10px;">
+                <b>【庫奇 Cookie】</b><br>
+                🍪 <b>職業：</b> 皇家大廚<br>
+                📏 <b>身高：</b> 20 層薑餅人高<br>
+                📋 <b>狀態：</b> 在廚房焦慮地踱步。<br>
+                </div>`,
+            rudolph: `
+                <div class="profile-content" style="border-left:4px solid #0a4; padding-left:10px;">
+                <b>【魯道夫 Rudolph】</b><br>
+                🦌 <b>職業：</b> 領航馴鹿<br>
+                📏 <b>身高：</b> 1.5 棵聖誕樹高<br>
+                📋 <b>狀態：</b> 躺在稻草堆中，蓋著厚毯子。<br>
+                </div>`
+        },
+        descriptions: {
+            lab: "實驗室雜亂無章。中央放著一台巨大的火箭引擎，周圍散落著無數螺絲和齒輪。",
+            kitchen: "廚房桌上放著一盤剛裝飾好的甜甜圈，空氣中充滿了甜膩的香氣。庫奇看起來非常緊張。",
+            barn: "馬廄很安靜。魯道夫躺在稻草堆裡睡覺，偶爾傳來呼嚕聲。",
+            tower_top: "（調查地點）鐘樓塔頂寒風凜冽。原本放置「永恆齒輪」的基座現在空空如也。四周除了雪，沒有其他東西。"
+        },
+        clues: {
+            spark: {
+                engine: "【調查結果】火箭引擎處於半成品狀態。火箭的核心動力區被畫了紅圈，旁邊的設計圖寫著：「現有電池動力不足，急需『永恆』級別的能源替代...」", // 動機
+                grappling_hook: "【調查結果】一把改造過的「強力磁鐵回收爪」，這是可以遠端吸取金屬的裝置。爪子上沾滿了厚厚一層、還在滴落的黑色機油。" // 手段+排除關鍵
+            },
+            cookie: {
+                cookie_powder: "【調查結果】桌上有一盤灑滿糖粉的甜甜圈。糖粉呈現特殊的螢光藍色。這種粉末顆粒極細，帶有靜電，極易吸附在衣物或皮膚表面。",
+                blueprint_sketch: "【調查結果】一張畫在油漬餐巾紙上的草圖。標註著：「必須在午夜前完成替換」、「結構要足以以假亂真」。"
+            },
+            tower: {
+                window_trace: "【調查結果】20 公尺高的通風窗外，窗台積著厚厚的雪。你仔細檢查了雪面：呈現完美的自然堆積曲線，沒有任何腳印、沒有梯子頂端的壓痕，也沒有繩索拖曳的軌跡。",
+                blue_powder_scene: "【調查結果】原本放置齒輪的基座空空如也。基座表面非常乾淨，完全沒有油漬，但有採集到了螢光藍色粉末。" // 排除史派克的關鍵：現場無油
+            },
+            rudolph: {
+                donut_box: "【調查結果】角落的甜甜圈盒子是空的。雖然魯道夫閉著眼，但在他左側鹿角的分岔處與鼻尖上，沾著些許顯眼的藍色粉末。",
+                blanket_hidden: "【調查結果】你將手伸進毯子下方。魯道夫的皮毛摸起來濕潤且溫度很高。當他吐氣時，鼻孔噴出了明顯的白霧。" // 生理證據
+            }
+        }
+    };
+    const scenes = {
+        opening_frozen: {
+            title: "11:59 的貴賓室",
+            image: "invitation.jpg", 
+            initText: "你低頭看著手中的金箔邀請函：『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", 
+            choices: [{ text: "等待約定時間", action: "play_prologue" }]
+        },
+        prologue: {
+            title: "聖誕老人的預感",
+            image: "barnaby_enter.jpg", 
+            initText: "", 
+            choices: [{ text: "接過人員名單", action: "goto:files" }]
+        },
+        files: {
+            title: "嫌疑人檔案",
+            image: "files.jpg",
+            initText: "這是目前全聖誕村唯三沒有被「時間凍結」的人。根據巴納比的判斷，犯人一定就在其中。",
+            hotspots: [
+                { label: "📁 檔案：史派克", top: "20%", left: "45%", action: "read:spark" },
+                { label: "📁 檔案：庫奇", top: "60%", left: "20%", action: "read:cookie" },
+                { label: "📁 檔案：魯道夫", top: "60%", left: "70%", action: "read:rudolph" }
+            ],
+            choices: [{ text: "前往現場搜查", action: "goto:hub" }]
+        },
+        hub: {
+            title: "中央廣場",
+            image: "hub.jpg",
+            initText: "【搜查任務啟動】<br>目前時間停止在 11:59。你必須完成以下目標：<br><br>1. 找出竊取「永恆齒輪」的犯人。<br>2. 掌握能夠定罪的關鍵物理證據。",
+            hotspots: [
+                { label: "🚀 實驗室", top: "40%", left: "15%", action: "goto:lab" },
+                { label: "🍪 點心房", top: "40%", left: "75%", action: "goto:kitchen" },
+                { label: "🦌 馬廄", top: "70%", left: "50%", action: "goto:barn" },
+                { label: "🏰 鐘樓塔頂 (案發地)", top: "15%", left: "45%", action: "goto:tower_top" }
+            ],
+            choices: [
+                { text: "📂 重看嫌疑人檔案", action: "goto:files" },
+                { text: "⚖️ 我已經知道犯人是誰了！", action: "pre_accuse" } 
+            ]
+        },
+        tower_top: {
+            title: "鐘樓塔頂",
+            image: "tower_top.jpg",
+            initText: contentData.descriptions.tower_top,
+            hotspots: [
+                { label: "🪟 檢查窗戶", top: "30%", left: "50%", action: "check:window_trace" },
+                { label: "✨ 檢查基座", top: "60%", left: "50%", action: "check:blue_powder_scene" }
+            ],
+            choices: [{ text: "返回廣場", action: "goto:hub" }]
+        },
+        lab: {
+            title: "史派克的實驗室",
+            image: "lab.jpg",
+            initText: contentData.descriptions.lab,
+            hotspots: [
+                { label: "⚙️ 檢查引擎狀況", top: "50%", left: "50%", action: "check:engine" },
+                { label: "✋ 檢查奇怪的工具", top: "70%", left: "30%", action: "check:grappling_hook" }
+            ],
+            choices: [
+                { text: "🗣️ 質問史派克", action: "goto:chat_spark" },
+                { text: "👣 返回廣場", action: "goto:hub" }
+            ]
+        },
+        kitchen: {
+            title: "庫奇的點心房",
+            image: "kitchen.jpg",
+            initText: contentData.descriptions.kitchen,
+            hotspots: [
+                { label: "🍩 檢查糖粉", top: "60%", left: "50%", action: "check:cookie_powder" },
+                { label: "📝 奇怪的草圖", top: "75%", left: "20%", action: "check:blueprint_sketch" }
+            ],
+            choices: [
+                { text: "🗣️ 質問庫奇", action: "goto:chat_cookie" },
+                { text: "👣 返回廣場", action: "goto:hub" }
+            ]
+        },
+        barn: {
+            title: "馴鹿馬廄",
+            image: "barn.jpg",
+            initText: contentData.descriptions.barn,
+            hotspots: [
+                { label: "👄 觀察魯道夫", top: "50%", left: "50%", action: "check:donut_box" },
+                { label: "🛌 檢查毯子", top: "75%", left: "60%", action: "check:blanket_hidden" } 
+            ],
+            choices: [
+                { text: "🗣️ 質問魯道夫", action: "goto:chat_rudolph" },
+                { text: "👣 返回廣場", action: "goto:hub" }
+            ]
+        },
+        
+        // --- 聊天場景 (優化對話與動機) ---
+        chat_spark: {
+            title: "對話：史派克",
+            image: "face_spark.jpg",
+            character: "史派克",
+            choices: [
+                { text: "🕒 你今晚都在做什麼？", action: "chat:spark_alibi" },
+                { text: "👀 你有注意到什麼異常嗎？", action: "chat:spark_suspect" },
+                { text: "🔍 關於那個回收爪...", action: "chat:spark_tool" },
+                { text: "💬 結束對話", action: "goto:lab" }
+            ]
+        },
+        chat_cookie: {
+            title: "對話：庫奇",
+            image: "face_cookie.jpg",
+            character: "庫奇",
+            choices: [
+                { text: "🕒 你今晚都在做什麼？", action: "chat:cookie_alibi" },
+                { text: "👀 你有注意到什麼異常嗎？", action: "chat:cookie_suspect" },
+                { text: "🔍 關於那張草圖...", action: "chat:cookie_sketch" },
+                { text: "💬 結束對話", action: "goto:kitchen" }
+            ]
+        },
+        chat_rudolph: {
+            title: "對話：魯道夫",
+            image: "face_rudolph.jpg",
+            character: "魯道夫",
+            choices: [
+                { text: "🕒 你今晚都在做什麼？", action: "chat:rudolph_alibi" },
+                { text: "👀 你有注意到什麼異常嗎？", action: "chat:rudolph_suspect" },
+                { text: "🔍 關於你身上的粉末...", action: "chat:rudolph_powder" },
+                { text: "💬 結束對話", action: "goto:barn" }
+            ]
+        },
+
+        // --- 結局流程 ---
+        accuse_drama: {
+            title: "指認時刻",
+            image: "accuse_drama.jpg",
+            initText: "", 
+            choices: [] 
+        },
+        accuse_denial: {
+            title: "指認錯誤",
+            image: "spark_denial_1.jpg", // 預設圖片，會被程式碼動態替換
+            initText: "",
+            choices: []
+        },
+        ending_confession: {
+            title: "沉重的真相",
+            image: "rudolph_cry.jpg",
+            initText: "", 
+            choices: []
+        },
+        ending_teamwork: {
+            title: "我們是團隊",
+            image: "teamwork.jpg",
+            initText: "", 
+            choices: []
+        },
+        ending_gear_fix: {
+            title: "齒輪歸位",
+            image: "fix_gear.jpg",
+            initText: "",
+            choices: []
+        },
+        ending_santa_reveal: {
+            title: "熟悉的笑聲",
+            image: "santa_voice.jpg", 
+            initText: "", 
+            choices: [] 
+        },
+        ending_real_face: {
+            title: "聖誕快樂",
+            image: "santa_claus.jpg", 
+            initText: "",
+            choices: [
+                { text: "🔄 再玩一次", action: "reload" }
+            ]
+        }
+    };
+// --- 3. 核心邏輯 ---
+
+    function renderScene(id) {
+        if (!scenes[id]) return;
+        const scene = scenes[id];
+        
+        const isUpdate = (gameState.currentScene === id);
+        gameState.currentScene = id;
+        if (!isUpdate) {
+            const vis = document.getElementById('visual-panel');
+            const header = document.getElementById('scene-title');
+            const feedback = document.getElementById('feedback-area');
+
+            const statusContainer = document.getElementById('header-bar').querySelector('div:last-child');
+            let statusText = "搜查中";
+            let statusIcon = "🎒";
+            if (['opening_frozen', 'prologue'].includes(id)) {
+                statusText = "緊急事態";
+                statusIcon = "🚨";
+            } else if (id.startsWith('ending')) {
+                statusText = "聖誕奇蹟";
+                statusIcon = "🎄";
+            } else if (id.startsWith('accuse')) {
+                statusText = "指認嫌犯";
+                statusIcon = "⚖️";
+            }
+            
+            statusContainer.innerHTML = `${statusIcon} 狀態: <span id="game-status" style="color:#4ecdc4">${statusText}</span>`;
+            vis.innerHTML = '';
+            vis.style.backgroundImage = `url('${scene.image}')`;
+            header.innerText = scene.title;
+            
+            if (gameState.sceneLogs[id]) {
+                feedback.innerHTML = gameState.sceneLogs[id];
+            } else {
+                feedback.innerHTML = '';
+                if (scene.initText) {
+                    addBubble(scene.initText, 'system');
+                }
+            }
+
+            if (scene.hotspots) {
+                scene.hotspots.forEach(spot => {
+                    const btn = document.createElement('div');
+                    btn.className = 'hotspot';
+                    btn.style.top = spot.top;
+                    btn.style.left = spot.left;
+                    btn.innerHTML = spot.label;
+                    btn.onclick = () => handleAction(spot.action);
+                    vis.appendChild(btn);
+                });
+            }
+        }
+
+        renderButtons(scene);
+        if (['lab', 'kitchen', 'barn', 'tower_top'].includes(id)) gameState.visited.add(id);
+        
+        if (id === 'opening_frozen' && !gameState.visited.has('opening')) {
+            gameState.visited.add('opening');
+            runDialogueSequence([
+                {t: "你坐在溫暖的壁爐前，牆上的掛鐘正滴答作響。", type: 'system'},
+                {t: "秒針指向了 11:59 分 59 秒。", type: 'system'},
+                {t: "原本該響起的整點鐘聲... 卻沒有出現。", type: 'system'},
+                {t: "火焰凝固在半空中，窗外的雪花懸停不動。世界被按下了暫停鍵。", type: 'system'}
+            ]);
+        }
+    }
+
+    function renderButtons(scene) {
+        const menu = document.getElementById('interaction-bar');
+        menu.innerHTML = '';
+        if (scene.choices) {
+            scene.choices.forEach(c => {
+                if (c.action.startsWith('chat:') && gameState.usedActions.has(c.action)) return;
+                
+                if (c.action.startsWith('ending:team_') && gameState.usedActions.has(c.action)) return;
+
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                
+                if (c.action === 'reload' || c.action === 'ending:fix_gear') {
+                    btn.className += ' replay-btn';
+                }
+                
+                btn.innerHTML = c.text.startsWith('🔹') || c.text.startsWith('⚙️') || c.text.startsWith('🕒') || c.text.startsWith('👀') || c.text.startsWith('🔍') ? c.text : "🔹 " + c.text;
+                btn.onclick = () => handleAction(c.action, c.text);
+                menu.appendChild(btn);
+            });
+        }
+    }
+
+    function addBubble(text, type, name) {
+        const feedback = document.getElementById('feedback-area');
+        const div = document.createElement('div');
+        
+        if (type === 'system') {
+            div.className = 'bubble bubble-system';
+            div.innerHTML = text;
+        } else if (type === 'char') {
+            div.className = 'bubble bubble-char';
+            if (name && name.includes('史派克')) div.classList.add('char-spark');
+            else if (name && name.includes('庫奇')) div.classList.add('char-cookie');
+            else if (name && name.includes('魯道夫')) div.classList.add('char-rudolph');
+            else if (name && name.includes('巴納比')) div.classList.add('char-barnaby');
+            
+            div.innerHTML = `<span class="char-name">${name}</span>${text}`;
+        } else if (type === 'player') {
+            div.className = 'bubble bubble-player';
+            div.innerHTML = text;
+        } else if (type === 'santa') {
+            div.className = 'bubble bubble-santa';
+            div.innerHTML = text;
+        } else if (type === 'drama') { 
+            div.className = 'bubble bubble-drama';
+            div.innerHTML = text;
+        } else if (type === 'mystery') { 
+            div.className = 'bubble bubble-mystery';
+            div.innerHTML = text;
+        }
+        
+        feedback.appendChild(div);
+        if (!gameState.sceneLogs[gameState.currentScene]) {
+            gameState.sceneLogs[gameState.currentScene] = '';
+        }
+        gameState.sceneLogs[gameState.currentScene] += div.outerHTML;
+
+        requestAnimationFrame(() => { feedback.scrollTop = feedback.scrollHeight; });
+    }
+
+    function runDialogueSequence(lines, onComplete) {
+        const menu = document.getElementById('interaction-bar');
+        menu.innerHTML = ''; 
+        
+        let delay = 0;
+        lines.forEach((line, index) => {
+            setTimeout(() => {
+                addBubble(line.t, line.type || 'system', line.name);
+                
+                if (index === lines.length - 1) {
+                    setTimeout(() => {
+                        if (onComplete) {
+                            onComplete();
+                        } else {
+                            renderScene(gameState.currentScene);
+                        }
+                    }, 800);
+                }
+            }, delay);
+            delay += 2200; 
+        });
+    }
+
+    function playPrologueSequence() {
+        renderScene('prologue');
+        gameState.sceneLogs['prologue'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        runDialogueSequence([
+            {t: "（碰！接待室的大門被撞開！）", type: "system"},
+            {t: "聖誕老人的助手長——巴納比，慌張地衝了進來，差點被地毯絆倒。", type: "system"},
+            {t: "聖誕老人！大事不好了... 咦？你是？", type: "char", name: "巴納比"},
+            {t: "啊！你是那封邀請函的... 偵探！感謝老天你在這裡！", type: "char", name: "巴納比"}, 
+            {t: "聖誕老人不見了，而「永恆齒輪」剛剛被偷走！現在時間完全停止了！", type: "char", name: "巴納比"},
+            {t: "我剛才緊急確認了聖誕村的狀況，除了我之外，只有三個人沒有被時間凍結。", type: "char", name: "巴納比"},
+            {t: "我把他們的資料都調出來了，拜託你，一定要找出是誰做的！", type: "char", name: "巴納比"}
+        ], () => {
+             const menu = document.getElementById('interaction-bar');
+             const btn = document.createElement('button');
+             btn.className = 'choice-btn';
+             btn.innerText = "🔹 查看這三人的資料";
+             btn.onclick = () => handleAction('goto:files');
+             menu.appendChild(btn);
+        });
+    }
+
+    function playAccusationSequence() {
+        renderScene('accuse_drama');
+        gameState.sceneLogs['accuse_drama'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        runDialogueSequence([
+            {t: "排除不可能的因素後，剩下的...", type: "drama"},
+            {t: "無論多麼不可思議，那就是真相！", type: "drama"},
+            {t: "犯人就在我們之中！", type: "drama"}
+        ], () => {
+             const menu = document.getElementById('interaction-bar');
+             ['史派克', '庫奇', '魯道夫'].forEach(name => {
+                 const btn = document.createElement('button');
+                 btn.className = 'choice-btn';
+                 btn.style.justifyContent = 'center';
+                 btn.style.fontWeight = 'bold';
+                 btn.innerText = `👉 指認 ${name}`;
+                 btn.onclick = () => handleAccusation(name);
+                 menu.appendChild(btn);
+             });
+        });
+    }
+
+    function handleAccusation(name) {
+        if (name === '魯道夫') {
+            renderScene('ending_confession');
+            playConfessionSequence();
+        } else {
+            const isSamePerson = (gameState.lastAccused === name);
+            gameState.lastAccused = name; 
+            gameState.wrongAccusationCount++;
+            
+            if (isSamePerson) {
+                playAngryDenialSequence(name);
+            } else {
+                if (gameState.wrongAccusationCount === 1) {
+                    playDenialSequence(name);
+                } else {
+                    playInterruptedDenialSequence(name);
+                }
+            }
+        }
+    }
+
+    function playAngryDenialSequence(name) {
+        // 設定憤怒/第二次指認的圖片
+        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_2.jpg';
+        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_2.jpg';
+
+        renderScene('accuse_denial');
+        gameState.sceneLogs['accuse_denial'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        let angryLines = [];
+        if (name === '史派克') {
+            angryLines = [
+                {t: "你的邏輯電路燒壞了嗎？！", type: "char", name: "史派克"},
+                {t: "史派克氣得全身發抖，用力把扳手砸在桌上！", type: "system"},
+                {t: "我說過不是我！要是再誣賴我，我就把你的雪橇拆成廢鐵！", type: "char", name: "史派克"},
+                {t: "科學家是不會說謊的！氣死我了！", type: "char", name: "史派克"}
+            ];
+        } else if (name === '庫奇') {
+            angryLines = [
+                {t: "噢！你這個沒禮貌的偵探！", type: "char", name: "庫奇"},
+                {t: "庫奇氣得臉漲成了紫紅色，手中的擠花袋被捏得變形，糖霜噴得到處都是。", type: "system"},
+                {t: "我說了沒有時間！我的薑餅快烤焦了！你還要浪費我多少時間！", type: "char", name: "庫奇"},
+                {t: "出去！不要妨礙我的神聖烘焙時刻！", type: "char", name: "庫奇"}
+            ];
+        } else {
+            angryLines = [{t: "我真的生氣了！不是我！", type: "char", name: name}];
+        }
+        
+        runDialogueSequence(angryLines, () => {
+            playAutoConfessionSequence();
+        });
+    }
+
+    function playDenialSequence(name) {
+        // 設定初次指認的圖片
+        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.jpg';
+        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.jpg';
+
+        renderScene('accuse_denial');
+        gameState.sceneLogs['accuse_denial'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        let denialLines = [];
+        if (name === '史派克') {
+            denialLines = [
+                {t: "什麼？我？", type: "char", name: "史派克"},
+                {t: "史派克瞪大了眼睛，氣得扳手都掉在地上。", type: "system"},
+                {t: "偵探，你看看我的手！這機油要是摸到那個金光閃閃的齒輪，早就留下手印了！", type: "char", name: "史派克"}, 
+                {t: "我才不會犯這種低級錯誤！", type: "char", name: "史派克"}
+            ];
+        } else if (name === '庫奇') {
+            denialLines = [
+                {t: "天啊！你懷疑我？", type: "char", name: "庫奇"},
+                {t: "庫奇嚇得差點把手上的擠花袋捏爆。", type: "system"},
+                {t: "我只是一個廚師！我要怎麼爬上 20 公尺的高塔？", type: "char", name: "庫奇"},
+                {t: "而且我的神聖的糖霜是用來裝飾的，不是用來當證物的！", type: "char", name: "庫奇"}
+            ];
+        }
+
+        runDialogueSequence(denialLines, () => {
+            const menu = document.getElementById('interaction-bar');
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = "🔙 重新思考";
+            btn.onclick = () => playAccusationSequence(); 
+            menu.appendChild(btn);
+        });
+    }
+
+    function playInterruptedDenialSequence(name) {
+        // 雖然是遊戲中的第二次錯誤指認，但對該角色是第一次，所以使用第一張圖
+        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.jpg';
+        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.jpg';
+
+        renderScene('accuse_denial');
+        gameState.sceneLogs['accuse_denial'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        let startLines = [];
+        if (name === '史派克') {
+            startLines = [{t: "你搞錯了！我根本沒做...", type: "char", name: "史派克"}];
+        } else if (name === '庫奇') {
+            startLines = [{t: "真的不是我！我對聖誕老人發誓...", type: "char", name: "庫奇"}];
+        }
+        
+        runDialogueSequence(startLines, () => {
+            playAutoConfessionSequence();
+        });
+    }
+
+    function playAutoConfessionSequence() {
+        document.getElementById('interaction-bar').innerHTML = '';
+        setTimeout(() => {
+            addBubble("...等等！", "mystery");
+            
+            setTimeout(() => {
+                const menu = document.getElementById('interaction-bar');
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = "👀 查看聲音來源";
+                btn.onclick = () => handleAction('ending:reveal_culprit'); 
+                menu.appendChild(btn);
+            }, 1000); 
+        }, 2000);
+    }
+
+    function playConfessionSequence(skipIntro = false) {
+        if (!skipIntro) {
+            document.getElementById('feedback-area').innerHTML = '';
+            gameState.sceneLogs['ending_confession'] = '';
+        }
+
+        let lines = [];
+        if (!skipIntro) {
+            lines = [
+                {t: "被指認後，魯道夫僵在原地。", type: "system"},
+                {t: "他下意識地舔了一下嘴角的藍色糖粉，眼神閃爍。", type: "system"},
+                {t: "對不起... 我真的太累了。", type: "char", name: "魯道夫"}
+            ];
+        }
+
+        lines.push(
+            {t: "每年禮物越來越重... 我怕我飛不動了...", type: "char", name: "魯道夫"},
+            {t: "我以為只要拿走齒輪，時間停住，我就不用面對這一切了。", type: "char", name: "魯道夫"},
+            {t: "魯道夫顫抖著不知道從何處，緩緩推得那枚閃耀著金色光芒的齒輪。", type: "system"},
+            {t: "他低下頭，將齒輪滑到了你的腳邊。", type: "system"}
+        );
+        runDialogueSequence(lines, () => {
+            const menu = document.getElementById('interaction-bar');
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = "🔹 這不是你一個人的責任...";
+            btn.onclick = () => handleAction('ending:teamwork');
+            menu.appendChild(btn);
+        });
+    }
+
+    function playEndingTeamworkSequence() {
+        scenes['ending_teamwork'].choices = [
+            { text: "🔹 史派克有話要說", action: "ending:team_spark" }
+        ];
+        renderScene('ending_teamwork');
+        gameState.sceneLogs['ending_teamwork'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+        
+        addBubble("你看著魯道夫垂頭喪氣的樣子，正想開口...", "system");
+    }
+
+    function handleAction(actionStr, btnText) {
+        playSound('click');
+        const [type, target] = actionStr.split(':');
+
+        if (gameState.usedActions.has(actionStr)) {
+            if (type === 'check' || type === 'read') {
+                return;
+            }
+        }
+        
+        gameState.usedActions.add(actionStr);
+        if (actionStr === 'play_prologue') {
+            playPrologueSequence();
+            return;
+        }
+
+        if (actionStr === 'reload') {
+            location.reload();
+            return;
+        }
+
+        if (type === 'goto') {
+            renderScene(target);
+        } 
+        else if (type === 'read') {
+            runDialogueSequence([{t: contentData.profiles[target], type: 'system'}]);
+        } 
+        else if (type === 'check') {
+            let text = "";
+            if(contentData.clues[target]) {
+                text = contentData.clues[target];
+            } else {
+                if (target === 'engine') text = contentData.clues.spark.engine;
+                else if (target === 'grappling_hook') text = contentData.clues.spark.grappling_hook;
+                else if (target === 'cookie_powder') text = contentData.clues.cookie.cookie_powder;
+                else if (target === 'blueprint_sketch') text = contentData.clues.cookie.blueprint_sketch;
+                else if (target === 'window_trace') text = contentData.clues.tower.window_trace;
+                else if (target === 'blue_powder_scene') text = contentData.clues.tower.blue_powder_scene;
+                else if (target === 'donut_box') text = contentData.clues.rudolph.donut_box;
+                else if (target === 'blanket_hidden') text = contentData.clues.rudolph.blanket_hidden;
+            }
+            runDialogueSequence([{t: text, type: 'system'}]);
+        } 
+        else if (type === 'chat') {
+            if(btnText) addBubble(btnText, 'player');
+            let chatLines = [];
+            
+            // 史派克 (Red Herring Mode)
+            if (target === 'spark_alibi') {
+                chatLines = [
+                    {t: "我在做什麼？我在試圖拯救聖誕節的物流系統！", type: 'char', name: '史派克'},
+                    {t: "這台引擎需要強大的動力源。我整晚都在計算數據，想辦法找替代能源...", type: 'char', name: '史派克'},
+                    {t: "但我發誓，我整晚都在實驗室裡，哪兒也沒去。", type: 'char', name: '史派克'}
+                ];
+            } else if (target === 'spark_suspect') {
+                chatLines = [
+                    {t: "如果你問我，我還是覺得高處有問題。", type: 'char', name: '史派克'},
+                    {t: "雖然地面無風，但我看到塔頂的風向標在瘋狂旋轉。那裡肯定有氣流擾動。", type: 'char', name: '史派克'} 
+                ];
+            } else if (target === 'spark_tool') {
+                chatLines = [
+                    {t: "（史派克眼神游移了一下）那個？那只是個... 工業用的夾娃娃機。", type: 'char', name: '史派克'},
+                    {t: "這是我的偉大發明！只要在 20 公尺內，我就能吸取任何金屬！", type: 'char', name: '史派克'},
+                    {t: "別碰它！很精密的... 而且上面都是油。", type: 'char', name: '史派克'} // 故意不說他沒用過，只說別碰，讓玩家自己發現油
+                ];
+            }
+            
+            // 庫奇
+            else if (target === 'cookie_alibi') {
+                chatLines = [
+                    {t: "我在 11:45 完成了藍色星塵甜甜圈的裝飾。", type: 'char', name: '庫奇'},
+                    {t: "之後我帶著盒子去了馬廄，把甜甜圈放在魯道夫的食槽旁邊。那時候他在睡覺，我就沒叫醒他，直接離開了。", type: 'char', name: '庫奇'}
+                ];
+            } else if (target === 'cookie_suspect') {
+                chatLines = [
+                    {t: "我覺得是史派克。", type: 'char', name: '庫奇'},
+                    {t: "他一直想把那個齒輪拆下來研究。而且他手那麼髒，大概連作案現場都會弄髒吧？", type: 'char', name: '庫奇'}
+                ];
+            } else if (target === 'cookie_sketch') {
+                chatLines = [
+                    {t: "這張圖？這是我為了聖誕派對準備的「驚喜大蛋糕」設計圖！", type: 'char', name: '庫奇'},
+                    {t: "我打算烤一個跟鐘樓齒輪一模一樣的薑餅，放在塔頂裝飾。", type: 'char', name: '庫奇'},
+                    {t: "「以假亂真」是指糖霜的光澤感啦！你們偵探都這麼敏感嗎？", type: 'char', name: '庫奇'}
+                ];
+            }
+            
+            // 魯道夫 (疲憊 & 防衛)
+            else if (target === 'rudolph_alibi') {
+                chatLines = [
+                    {t: "（魯道夫打了一個長長的哈欠）", type: 'system'},
+                    {t: "從晚上十點熄燈後，我就一直在這裡睡覺。", type: 'char', name: '魯道夫'},
+                    {t: "聖誕節的飛行任務很重，我必須儲備體力... 拜託，讓我多睡一會吧。", type: 'char', name: '魯道夫'} // 謊言：其實剛回來
+                ];
+            } else if (target === 'rudolph_suspect') {
+                chatLines = [
+                    {t: "我睡得很死，什麼都沒聽到，也沒看到。", type: 'char', name: '魯道夫'},
+                    {t: "也許你可以去問問那些還醒著的人？不要為難我這隻想睡覺的馴鹿了。", type: 'char', name: '魯道夫'} // 試圖置身事外
+                ];
+            } else if (target === 'rudolph_powder') {
+                chatLines = [
+                    {t: "粉末？...噢。", type: 'char', name: '魯道夫'},
+                    {t: "大概是庫奇送點心來的時候弄得到處都是吧。你知道他那個人，動作總是很大。", type: 'char', name: '魯道夫'},
+                    {t: "這應該不犯法吧？沾到一點糖粉？", type: 'char', name: '魯道夫'} // 避重就輕
+                ];
+            } else {
+                chatLines = [{t: "...", type: 'char', name: 'NPC'}];
+            }
+
+            runDialogueSequence(chatLines);
+        }
+        else if (type === 'pre_accuse') {
+            if(!confirm("⚠️ 警告：指認機會有限。\n請確認你已掌握「入侵手段」與「關鍵證物」的連結。\n\n確定要現在指認嗎？")) return;
+            playAccusationSequence(); 
+        }
+        else if (type === 'ending') {
+            if (target === 'teamwork') {
+                playEndingTeamworkSequence();
+            } 
+            else if (target === 'reveal_culprit') {
+                renderScene('ending_confession');
+                gameState.sceneLogs['ending_confession'] = '';
+                document.getElementById('feedback-area').innerHTML = '';
+                
+                runDialogueSequence([
+                    {t: "別再猜了！", type: "char", name: "魯道夫"},
+                    {t: "魯道夫突然站了出來，打斷了對話。", type: "system"},
+                    {t: "不是他們... 是我。是我做的。", type: "char", name: "魯道夫"},
+                    {t: "我不希望因為我的自私，讓其他人被誤會。", type: "char", name: "魯道夫"},
+                    {t: "對不起... 我真的很抱歉。", type: "char", name: "魯道夫"}
+                ], () => {
+                    playConfessionSequence(true); 
+                });
+            }
+            else if (target === 'team_spark') {
+                runDialogueSequence([
+                    {t: "史派克衝上前，用力拍了拍魯道夫的背。", type: "system"},
+                    {t: "傻瓜！你以為我做那些火箭是為了什麼？", type: "char", name: "史派克"},
+                    {t: "就是為了幫你在起飛時推進啊！今年我們可以用輔助引擎！", type: "char", name: "史派克"}
+                ], () => {
+                    scenes['ending_teamwork'].choices = [{ text: "🔹 庫奇拿出了東西", action: "ending:team_cookie" }];
+                    renderButtons(scenes['ending_teamwork']);
+                });
+            } else if (target === 'team_cookie') {
+                runDialogueSequence([
+                    {t: "庫奇從口袋掏出一塊熱騰騰的薑餅，遞了過去。", type: "system"},
+                    {t: "還有這個！這裡面加了雙倍的快樂魔法糖霜。", type: "char", name: "庫奇"},
+                    {t: "吃下去，你會覺得輕飄飄的！", type: "char", name: "庫奇"}
+                ], () => {
+                    scenes['ending_teamwork'].choices = [{ text: "🔹 巴納比的總結", action: "ending:team_barnaby" }];
+                    renderButtons(scenes['ending_teamwork']);
+                });
+            } else if (target === 'team_barnaby') {
+                runDialogueSequence([
+                    {t: "巴納比走到魯道夫面前。", type: "system"},
+                    {t: "偵探找出了真相，但解決問題需要我們大家。", type: "char", name: "巴納比"}, 
+                    {t: "魯道夫，你是我們的領航員，沒有你，我們誰也去不了。", type: "char", name: "巴納比"},
+                    {t: "魯道夫擦乾眼淚，紅鼻子微微發亮。", type: "system"},
+                    {t: "謝謝... 謝謝你們。那我們... 出發吧？", type: "char", name: "魯道夫"}
+                ], () => {
+                    scenes['ending_teamwork'].choices = [{ text: "⚙️ 修復時間，啟動聖誕節！", action: "ending:fix_gear" }];
+                    renderButtons(scenes['ending_teamwork']);
+                });
+            }
+            else if (target === 'fix_gear') {
+                playEndingFixGearSequence();
+            } else if (target === 'santa_reveal') {
+                renderScene('ending_santa_reveal');
+                gameState.sceneLogs['ending_santa_reveal'] = '';
+                document.getElementById('feedback-area').innerHTML = '';
+
+                runDialogueSequence([
+                    {t: "Ho Ho Ho！做得好啊，各位！", type: 'santa'}, // 先出聲音
+                    {t: "（大家驚訝地抬起頭，尋找聲音的來源...）", type: 'system'}
+                ], () => {
+                     const menu = document.getElementById('interaction-bar');
+                     const btn = document.createElement('button');
+                     btn.className = 'choice-btn';
+                     btn.innerText = "🔹 轉身看是誰？";
+                     btn.onclick = () => handleAction('ending:show_face'); // 再看臉
+                     menu.appendChild(btn);
+                });
+            } else if (target === 'show_face') {
+                renderScene('ending_real_face');
+                runDialogueSequence([
+                    {t: "是聖誕老人！", type: 'system'},
+                    {t: "偵探，還記得那封邀請函嗎？", type: 'santa'},
+                    {t: "我寫著「今晚會有大事發生」。我指的不是失竊，而是你們的「團圓」。", type: 'santa'},
+                    {t: "魯道夫，不需要獨自承擔一切。真正的聖誕魔法，從來不是禮物，而是彼此扶持的心。", type: 'santa'},
+                    {t: "Merry Christmas！孩子們還在等著我們呢，上工囉！", type: 'santa'}
+                ], () => {
+                    const menu = document.getElementById('interaction-bar');
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn replay-btn';
+                    btn.innerText = "🔄 再玩一次";
+                    btn.onclick = () => location.reload();
+                    menu.appendChild(btn);
+                });
+            }
+        }
+    }
+
+    // --- 4. 啟動遊戲 ---
+    window.onload = function() {
+        renderScene('opening_frozen');
+    };
+
+    function playEndingFixGearSequence() {
+        renderScene('ending_gear_fix');
+        gameState.sceneLogs['ending_gear_fix'] = '';
+        document.getElementById('feedback-area').innerHTML = '';
+        runDialogueSequence([
+            {t: "大家合力將沈重的金色齒輪抬起，推回了鐘樓中心的軸承上。", type: 'system'},
+            {t: "卡嗒！齒輪完美咬合。", type: 'system'},
+            {t: "原本凝滯的雪花開始飄落，秒針發出了清脆的走動聲。世界開始解凍...", type: 'system'},
+            {t: "就在這時，空氣中傳來了一陣宏亮溫暖的笑聲...", type: 'system'}
+        ], () => {
+            const menu = document.getElementById('interaction-bar');
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn replay-btn'; 
+            btn.innerText = "👂 聽聽那個聲音";
+            btn.onclick = () => handleAction('ending:santa_reveal'); 
+            menu.appendChild(btn);
+        });
+    }
+
+</script>
+</body>
+</html>
