@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聖誕夜的消失齒輪</title>
+    <title>聖誕夜的消失齒輪 - 導演最終版</title>
     <style>
         /* --- 視覺風格 --- */
         body {
@@ -273,6 +273,9 @@
 
     // --- 2. 遊戲資料 ---
     
+    // --- 遊戲狀態初始化與本地存儲 ---
+    const STORAGE_KEY = 'christmasMysteryGameSave';
+    
     let gameState = {
         visited: new Set(),
         usedActions: new Set(),
@@ -281,6 +284,37 @@
         wrongAccusationCount: 0,
         lastAccused: null 
     };
+
+    // 儲存狀態的函數
+    function saveGameState() {
+        const stateToSave = {
+            ...gameState,
+            visited: Array.from(gameState.visited),
+            usedActions: Array.from(gameState.usedActions),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    }
+
+    // 載入狀態的函數
+    function loadGameState() {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            gameState = {
+                ...parsedState,
+                visited: new Set(parsedState.visited),
+                usedActions: new Set(parsedState.usedActions),
+            };
+            // 由於 sceneLogs 中的 HTML 可能包含動態產生的內容，我們只需要載入當前場景的日誌
+            if (gameState.currentScene && gameState.sceneLogs[gameState.currentScene]) {
+                return true; 
+            }
+        }
+        return false;
+    }
+    // --- 遊戲狀態初始化與本地存儲 End ---
+
+
     const contentData = {
         profiles: {
             spark: `
@@ -322,7 +356,7 @@
             },
             tower: {
                 window_trace: "【調查結果】20 公尺高的通風窗外，窗台積著厚厚的雪。你仔細檢查了雪面：呈現完美的自然堆積曲線，沒有任何腳印、沒有梯子頂端的壓痕，也沒有繩索拖曳的軌跡。",
-                blue_powder_scene: "【調查結果】原本放置齒輪的基座空空如也。基座表面非常乾淨，完全沒有油漬，但有採集到了螢光藍色粉末。" // 排除史派克的關鍵：現場無油
+                blue_powder_scene: "【調查結果】原本放置齒輪的基座空空如也。基座表面非常乾淨，完全沒有油漬，但有採集到螢光藍色粉末。" // 排除史派克的關鍵：現場無油
             },
             rudolph: {
                 donut_box: "【調查結果】角落的甜甜圈盒子是空的。雖然魯道夫閉著眼，但在他鹿角與鼻尖上，沾著顯眼的藍色粉末。",
@@ -334,7 +368,7 @@
         opening_frozen: {
             title: "11:59 的貴賓室",
             image: "invitation.jpg", 
-            initText: "你低頭看著手中的金箔邀請函：『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", 
+            initText: "處於溫暖的屋子中，你低頭看著手中的金箔邀請函：『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", 
             choices: [{ text: "等待約定時間", action: "play_prologue" }]
         },
         prologue: {
@@ -410,8 +444,8 @@
             image: "barn.jpg",
             initText: contentData.descriptions.barn,
             hotspots: [
-                { label: "👄 觀察魯道夫", top: "50%", left: "50%", action: "check:donut_box" },
-                { label: "🛌 檢查毯子", top: "75%", left: "60%", action: "check:blanket_hidden" } 
+                { label: "👄 觀察魯道夫", top: "50%", left: "60%", action: "check:donut_box" },
+                { label: "🛌 檢查毯子", top: "75%", left: "40%", action: "check:blanket_hidden" } 
             ],
             choices: [
                 { text: "🗣️ 質問魯道夫", action: "goto:chat_rudolph" },
@@ -502,13 +536,24 @@
     };
 // --- 3. 核心邏輯 ---
 
-    function renderScene(id) {
+    // --- 新增：點擊推進控制變數 ---
+    let dialogueQueue = [];
+    let isDialogueRunning = false;
+    let dialogueOnComplete = null;
+    let dialogueTimer = null; // **[保留：對話計時器]**
+    const clickArea = document.getElementById('game-container');
+    // --- 新增：點擊推進控制變數 End ---
+
+
+    function renderScene(id, isResuming = false) {
         if (!scenes[id]) return;
         const scene = scenes[id];
         
         const isUpdate = (gameState.currentScene === id);
-        gameState.currentScene = id;
-        if (!isUpdate) {
+        
+        // 只有在場景改變時才執行大部分的更新
+        if (!isUpdate || isResuming) {
+            gameState.currentScene = id; // 更新當前場景
             const vis = document.getElementById('visual-panel');
             const header = document.getElementById('scene-title');
             const feedback = document.getElementById('feedback-area');
@@ -528,20 +573,27 @@
             }
             
             statusContainer.innerHTML = `${statusIcon} 狀態: <span id="game-status" style="color:#4ecdc4">${statusText}</span>`;
-            vis.innerHTML = '';
-            vis.style.backgroundImage = `url('${scene.image}')`;
+            
+            // 載入場景時，如果不是在對話中，則清除熱點並設置背景
+            if (!isDialogueRunning) {
+                vis.innerHTML = '<div class="overlay-gradient"></div>'; // 清除熱點
+                vis.style.backgroundImage = `url('${scene.image}')`;
+            }
+
             header.innerText = scene.title;
             
             if (gameState.sceneLogs[id]) {
+                // 如果是從存檔載入，直接恢復對話紀錄
                 feedback.innerHTML = gameState.sceneLogs[id];
             } else {
                 feedback.innerHTML = '';
-                if (scene.initText) {
+                if (scene.initText && !isResuming) {
                     addBubble(scene.initText, 'system');
                 }
             }
 
-            if (scene.hotspots) {
+            // 只有在非對話/非結尾動畫時才顯示熱點
+            if (scene.hotspots && !isDialogueRunning && !id.startsWith('ending') && !id.startsWith('accuse')) {
                 scene.hotspots.forEach(spot => {
                     const btn = document.createElement('div');
                     btn.className = 'hotspot';
@@ -557,15 +609,18 @@
         renderButtons(scene);
         if (['lab', 'kitchen', 'barn', 'tower_top'].includes(id)) gameState.visited.add(id);
         
-        if (id === 'opening_frozen' && !gameState.visited.has('opening')) {
+        // 初始場景對話處理
+        if (id === 'opening_frozen' && !gameState.visited.has('opening') && !isResuming) {
             gameState.visited.add('opening');
             runDialogueSequence([
-                {t: "你坐在溫暖的壁爐前，牆上的掛鐘正滴答作響。", type: 'system'},
+                {t: "坐在溫暖的壁爐前，你看著牆上的掛鐘正滴答作響。", type: 'system'},
                 {t: "秒針指向了 11:59 分 59 秒。", type: 'system'},
                 {t: "原本該響起的整點鐘聲... 卻沒有出現。", type: 'system'},
                 {t: "火焰凝固在半空中，窗外的雪花懸停不動。世界被按下了暫停鍵。", type: 'system'}
             ]);
         }
+        
+        saveGameState(); // 每次渲染場景或狀態更新都保存
     }
 
     function renderButtons(scene) {
@@ -627,30 +682,53 @@
         gameState.sceneLogs[gameState.currentScene] += div.outerHTML;
 
         requestAnimationFrame(() => { feedback.scrollTop = feedback.scrollHeight; });
+        saveGameState(); // 對話氣泡新增後也保存
+    }
+
+    // --- 新增：對話推進邏輯 ---
+    function processNextDialogueLine() {
+        // **[保留：清除舊的計時器，無論是自動還是點擊觸發，確保每次只處理一個元件]**
+        clearTimeout(dialogueTimer); 
+
+        if (dialogueQueue.length > 0) {
+            const line = dialogueQueue.shift();
+            addBubble(line.t, line.type || 'system', line.name);
+            
+            if (dialogueQueue.length > 0) {
+                // 如果隊列中還有對話，設定新的自動播放計時器
+                dialogueTimer = setTimeout(processNextDialogueLine, 2200); // 延遲自動播放
+            } else {
+                // 對話結束
+                isDialogueRunning = false;
+                clickArea.removeEventListener('click', processNextDialogueLine);
+                if (dialogueOnComplete) {
+                    setTimeout(dialogueOnComplete, 800); // 等待最後一個泡泡顯示完畢
+                } else {
+                    renderScene(gameState.currentScene);
+                }
+            }
+        }
     }
 
     function runDialogueSequence(lines, onComplete) {
+        // 清除任何舊的自動播放
+        clearTimeout(dialogueTimer); 
+        clickArea.removeEventListener('click', processNextDialogueLine);
+        
         const menu = document.getElementById('interaction-bar');
         menu.innerHTML = ''; 
         
-        let delay = 0;
-        lines.forEach((line, index) => {
-            setTimeout(() => {
-                addBubble(line.t, line.type || 'system', line.name);
-                
-                if (index === lines.length - 1) {
-                    setTimeout(() => {
-                        if (onComplete) {
-                            onComplete();
-                        } else {
-                            renderScene(gameState.currentScene);
-                        }
-                    }, 800);
-                }
-            }, delay);
-            delay += 2200; 
-        });
+        dialogueQueue = [...lines];
+        isDialogueRunning = true;
+        dialogueOnComplete = onComplete;
+        
+        // 啟用點擊推進
+        clickArea.addEventListener('click', processNextDialogueLine);
+        
+        // 立即顯示第一個對話並啟動自動播放/點擊模式
+        processNextDialogueLine();
     }
+    // --- 新增：對話推進邏輯 End ---
 
     function playPrologueSequence() {
         renderScene('prologue');
@@ -663,7 +741,7 @@
             {t: "聖誕老人！大事不好了... 咦？你是？", type: "char", name: "巴納比"},
             {t: "啊！你是那封邀請函的... 偵探！感謝老天你在這裡！", type: "char", name: "巴納比"}, 
             {t: "聖誕老人不見了，而「永恆齒輪」剛剛被偷走！現在時間完全停止了！", type: "char", name: "巴納比"},
-            {t: "我剛才緊急確認了聖誕村的狀況，除了我之外，只有三個人沒有被時間凍結。", type: "char", name: "巴納比"},
+            {t: "我剛才趕快確認了聖誕村的狀況，除了我之外，只有三個人沒有被時間凍結。", type: "char", name: "巴納比"},
             {t: "我把他們的資料都調出來了，拜託你，一定要找出是誰做的！", type: "char", name: "巴納比"}
         ], () => {
              const menu = document.getElementById('interaction-bar');
@@ -739,7 +817,7 @@
         } else if (name === '庫奇') {
             angryLines = [
                 {t: "噢！你這個沒禮貌的偵探！", type: "char", name: "庫奇"},
-                {t: "庫奇氣得臉漲成了紫紅色，手中的擠花袋被捏得變形，糖霜噴得到處都是。", type: "system"},
+                {t: "庫奇氣得臉漲成了紅色，手中的擠花袋被捏得變形，糖霜噴得到處都是。", type: "system"},
                 {t: "我說了沒有時間！我的薑餅快烤焦了！你還要浪費我多少時間！", type: "char", name: "庫奇"},
                 {t: "出去！不要妨礙我的神聖烘焙時刻！", type: "char", name: "庫奇"}
             ];
@@ -811,18 +889,18 @@
 
     function playAutoConfessionSequence() {
         document.getElementById('interaction-bar').innerHTML = '';
-        setTimeout(() => {
-            addBubble("...等等！", "mystery");
-            
-            setTimeout(() => {
-                const menu = document.getElementById('interaction-bar');
-                const btn = document.createElement('button');
-                btn.className = 'choice-btn';
-                btn.innerText = "👀 查看聲音來源";
-                btn.onclick = () => handleAction('ending:reveal_culprit'); 
-                menu.appendChild(btn);
-            }, 1000); 
-        }, 2000);
+        // 使用 runDialogueSequence 處理 "Wait!" 的對話，確保可以點擊推進
+        runDialogueSequence([
+            {t: "...等等！", type: "mystery"}
+        ], () => {
+            // 對話結束後，顯示按鈕
+            const menu = document.getElementById('interaction-bar');
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = "👀 查看聲音來源";
+            btn.onclick = () => handleAction('ending:reveal_culprit'); 
+            menu.appendChild(btn);
+        });
     }
 
     function playConfessionSequence(skipIntro = false) {
@@ -835,7 +913,7 @@
         if (!skipIntro) {
             lines = [
                 {t: "被指認後，魯道夫僵在原地。", type: "system"},
-                {t: "他下意識地舔了一下嘴角的藍色糖粉，眼裡泛著淚水。", type: "system"},
+                {t: "他下意識地舔了一下嘴角的藍色糖粉，眼睛泛著淚水。", type: "system"},
                 {t: "對不起... 我真的太累了。", type: "char", name: "魯道夫"}
             ];
         }
@@ -864,11 +942,23 @@
         gameState.sceneLogs['ending_teamwork'] = '';
         document.getElementById('feedback-area').innerHTML = '';
         
-        addBubble("你看著魯道夫垂頭喪氣的樣子，正想開口...", "system");
+        runDialogueSequence([
+            {t: "你看著魯道夫垂頭喪氣的樣子，正想開口...", type: "system"}
+        ], () => {
+            renderButtons(scenes['ending_teamwork']);
+        });
     }
 
     function handleAction(actionStr, btnText) {
         playSound('click');
+        // 點擊按鈕時，清除對話推進監聽
+        clickArea.removeEventListener('click', processNextDialogueLine);
+        isDialogueRunning = false;
+        
+        // 清除計時器，確保在執行新動作時停止任何對話的自動/加速推進
+        clearTimeout(dialogueTimer); 
+
+
         const [type, target] = actionStr.split(':');
 
         if (gameState.usedActions.has(actionStr)) {
@@ -878,12 +968,15 @@
         }
         
         gameState.usedActions.add(actionStr);
+        saveGameState(); // 行動後保存
+
         if (actionStr === 'play_prologue') {
             playPrologueSequence();
             return;
         }
 
         if (actionStr === 'reload') {
+            localStorage.removeItem(STORAGE_KEY); // 重玩時清除存檔
             location.reload();
             return;
         }
@@ -911,74 +1004,84 @@
             runDialogueSequence([{t: text, type: 'system'}]);
         } 
         else if (type === 'chat') {
-            if(btnText) addBubble(btnText, 'player');
+            // **[修復開始：將玩家的提問也納入 runDialogueSequence 的自動推進序列]**
             let chatLines = [];
+            
+            // 1. 加入玩家的提問
+            if(btnText) {
+                chatLines.push({t: btnText, type: 'player'});
+            }
+            
+            // 2. 準備 NPC 的回應
             
             // 史派克 (Red Herring Mode)
             if (target === 'spark_alibi') {
-                chatLines = [
+                chatLines.push(
                     {t: "我在做什麼？我在試圖拯救聖誕節的物流系統！", type: 'char', name: '史派克'},
                     {t: "這台引擎需要強大的動力源。我整晚都在計算數據，想辦法找替代能源...", type: 'char', name: '史派克'},
                     {t: "但我發誓，我整晚都在實驗室裡，哪兒也沒去。", type: 'char', name: '史派克'}
-                ];
+                );
             } else if (target === 'spark_suspect') {
-                chatLines = [
+                chatLines.push(
                     {t: "如果你問我，我還是覺得高處有問題。", type: 'char', name: '史派克'},
-                    {t: "雖然地面無風，但我看到塔頂的風向標在瘋狂旋轉。那裡肯定有氣流擾動。", type: 'char', name: '史派克'} 
-                ];
+                    {t: "十二點前我有出去一趟。", type: 'char', name: '史派克'},
+                    {t: "那時雖然地面無風，但我看到塔頂的風向標在瘋狂旋轉。那裡肯定有氣流擾動。", type: 'char', name: '史派克'} 
+                );
             } else if (target === 'spark_tool') {
-                chatLines = [
+                chatLines.push(
                     {t: "（史派克眼神游移了一下）那個？那只是個... 工業用的夾娃娃機。", type: 'char', name: '史派克'},
                     {t: "這是我的偉大發明！只要在 20 公尺內，我就能吸取任何金屬！", type: 'char', name: '史派克'},
                     {t: "別碰它！很精密的... 而且上面都是油。", type: 'char', name: '史派克'} // 故意不說他沒用過，只說別碰，讓玩家自己發現油
-                ];
+                );
             }
             
             // 庫奇
             else if (target === 'cookie_alibi') {
-                chatLines = [
+                chatLines.push(
                     {t: "我在 11:45 完成了藍色星塵甜甜圈的裝飾。", type: 'char', name: '庫奇'},
                     {t: "之後我帶著盒子去了馬廄，把甜甜圈放在魯道夫的食槽旁邊。那時候他在睡覺，我就沒叫醒他，直接離開了。", type: 'char', name: '庫奇'}
-                ];
+                );
             } else if (target === 'cookie_suspect') {
-                chatLines = [
+                chatLines.push(
                     {t: "我覺得是史派克。", type: 'char', name: '庫奇'},
                     {t: "他一直想把那個齒輪拆下來研究。而且他手那麼髒，大概連作案現場都會弄髒吧？", type: 'char', name: '庫奇'}
-                ];
+                );
             } else if (target === 'cookie_sketch') {
-                chatLines = [
+                chatLines.push(
                     {t: "這張圖？這是我為了聖誕派對準備的「驚喜大蛋糕」設計圖！", type: 'char', name: '庫奇'},
                     {t: "我打算烤一個跟鐘樓齒輪一模一樣的薑餅，放在塔頂裝飾。", type: 'char', name: '庫奇'},
                     {t: "「以假亂真」是指糖霜的光澤感啦！你們偵探都這麼敏感嗎？", type: 'char', name: '庫奇'}
-                ];
+                );
             }
             
             // 魯道夫 (疲憊 & 防衛)
             else if (target === 'rudolph_alibi') {
-                chatLines = [
+                chatLines.push(
                     {t: "（魯道夫打了一個長長的哈欠）", type: 'system'},
                     {t: "從晚上十點熄燈後，我就一直在這裡睡覺。", type: 'char', name: '魯道夫'},
                     {t: "聖誕節的飛行任務很重，我必須儲備體力... 拜託，讓我多睡一會吧。", type: 'char', name: '魯道夫'} // 謊言：其實剛回來
-                ];
+                );
             } else if (target === 'rudolph_suspect') {
-                chatLines = [
+                chatLines.push(
                     {t: "我睡得很死，什麼都沒聽到，也沒看到。", type: 'char', name: '魯道夫'},
                     {t: "也許你可以去問問那些還醒著的人？不要為難我這隻想睡覺的馴鹿了。", type: 'char', name: '魯道夫'} // 試圖置身事外
-                ];
+                );
             } else if (target === 'rudolph_powder') {
-                chatLines = [
+                chatLines.push(
                     {t: "粉末？...噢。", type: 'char', name: '魯道夫'},
                     {t: "大概是庫奇送點心來的時候弄得到處都是吧。你知道他那個人，動作總是很大。", type: 'char', name: '魯道夫'},
                     {t: "這應該不犯法吧？沾到一點糖粉？", type: 'char', name: '魯道夫'} // 避重就輕
-                ];
+                );
             } else {
-                chatLines = [{t: "...", type: 'char', name: 'NPC'}];
+                chatLines.push({t: "...", type: 'char', name: 'NPC'});
             }
 
+            // 3. 執行包含玩家提問和 NPC 回應的完整序列
             runDialogueSequence(chatLines);
+            // **[修復結束]**
         }
         else if (type === 'pre_accuse') {
-            if(!confirm("⚠️ 警告：指認機會有限。\n請確認你已掌握「入侵手段」與「關鍵證物」的連結。\n\n確定要現在指認嗎？")) return;
+            if(!confirm("⚠️ 警告：指認機會有兩次。\n請確認你已掌握「犯人的竊盜手段」與「關鍵證物」的連結。\n\n確定要現在指認嗎？")) return;
             playAccusationSequence(); 
         }
         else if (type === 'ending') {
@@ -1055,7 +1158,7 @@
                     {t: "偵探，還記得那封邀請函嗎？", type: 'santa'},
                     {t: "我寫著「今晚會有大事發生」。我指的不是失竊，而是你們的「團圓」。", type: 'santa'},
                     {t: "魯道夫，不需要獨自承擔一切。真正的聖誕魔法，從來不是禮物，而是彼此扶持的心。", type: 'santa'},
-                    {t: "Merry Christmas！孩子們還在等著我們呢，上工囉！", type: 'santa'}
+                    {t: "Merry Christmas！全世界的孩子們還在等著我們呢，上工囉！", type: 'santa'}
                 ], () => {
                     const menu = document.getElementById('interaction-bar');
                     const btn = document.createElement('button');
@@ -1070,7 +1173,13 @@
 
     // --- 4. 啟動遊戲 ---
     window.onload = function() {
-        renderScene('opening_frozen');
+        if (loadGameState()) {
+            // 從存檔恢復
+            renderScene(gameState.currentScene, true);
+        } else {
+            // 首次啟動
+            renderScene('opening_frozen');
+        }
     };
 
     function playEndingFixGearSequence() {
