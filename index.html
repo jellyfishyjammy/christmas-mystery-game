@@ -241,75 +241,83 @@
             line-height: 1.8; }
         .hidden { display: none !important;
         }
-        /* --- 📱 手機版適配 (RWD) --- */
+        /* --- 📱 手機版適配 (RWD) - 修改版 --- */
         @media (max-width: 768px) {
             body {
-                /* 手機版背景改為單色，避免漸層在長頁面跑版 */
+                /* 禁止整個網頁捲動，只允許內部區塊捲動 */
+                overflow: hidden;
                 background-image: none;
                 background-color: #050510;
-                /* 確保內容從頂部開始，防止因 flex 置中而被切掉 */
-                align-items: flex-start; 
+                align-items: flex-start;
             }
 
             #game-container {
-                /* 寬度與高度改為佔滿螢幕 */
                 width: 100% !important;
+                /* 使用 100dvh 確保填滿手機螢幕（包含網址列變化） */
                 height: 100vh !important;
-                height: 100dvh !important; /* 針對手機瀏覽器網址列優化 */
-                
-                /* 移除圓角與邊框，讓畫面更像 App */
+                height: 100dvh !important; 
                 border: none;
                 border-radius: 0;
                 box-shadow: none;
-                
-                /* 關鍵：改為「直式」排列 (原本是橫式 row) */
-                flex-direction: column; 
+                flex-direction: column; /* 直式排列 */
             }
 
             #visual-panel {
-                /* 圖片區塊：佔畫面高度的 40% */
-                flex: 4; 
+                /* 【關鍵修改】固定圖片高度，不隨內容伸縮 */
+                flex: 0 0 38vh; /* 固定佔用螢幕高度的 38% */
+                width: 100%;
                 border-right: none;
                 border-bottom: 2px solid #333;
-                width: 100%;
+                z-index: 10;
+                position: relative;
             }
 
             #narrative-panel {
-                /* 對話區塊：佔畫面高度的 60% */
-                flex: 6; 
+                /* 【關鍵修改】填滿剩餘空間，並建立捲動環境 */
+                flex: 1; /* 自動填滿剩餘的 62% 高度 */
                 width: 100%;
+                display: flex;
+                flex-direction: column;
+                min-height: 0; /* 讓 Flex 子元素的 overflow: auto 生效的關鍵 */
             }
 
             #header-bar {
                 padding: 10px 15px;
                 min-height: 40px;
+                flex-shrink: 0; /* 防止標題被壓縮 */
             }
 
-            #scene-title {
-                font-size: 16px; /* 標題字縮小 */
-            }
-
-            /* 優化對話框閱讀體驗 */
             #feedback-area {
+                /* 【關鍵修改】這裡設定捲動 */
+                flex: 1;
+                overflow-y: auto; /* 內容過多時出現捲軸 */
                 padding: 15px;
-            }
-            .bubble {
-                font-size: 15px;
-                padding: 10px 14px;
-                max-width: 95%; /* 讓泡泡寬一點 */
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch; /* iOS 慣性滑動 */
             }
 
-            /* 優化按鈕點擊區域 */
-            .choice-btn {
-                padding: 14px; /* 加大按鈕，手指好點 */
-                font-size: 16px;
+            #interaction-bar {
+                flex-shrink: 0; /* 防止按鈕區被壓縮 */
+                padding: 15px;
+                z-index: 10;
+                background: #18181d; /* 確保背景不透明 */
             }
 
-            /* 優化調查熱點 */
-            .hotspot {
-                padding: 10px 15px; /* 加大熱點範圍 */
-                font-size: 14px;
-                transform: translate(-50%, -50%); /* 確保定位點在中心 */
+            /* --- 樣式微調 --- */
+            #scene-title { font-size: 16px; }
+            .bubble { 
+                font-size: 15px; 
+                padding: 10px 14px; 
+                max-width: 95%; 
+            }
+            .choice-btn { 
+                padding: 14px; 
+                font-size: 16px; 
+            }
+            .hotspot { 
+                padding: 10px 15px; 
+                font-size: 14px; 
+                transform: translate(-50%, -50%); 
             }
         }
     </style>
