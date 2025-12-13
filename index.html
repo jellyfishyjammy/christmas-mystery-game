@@ -242,6 +242,15 @@
         .hidden { display: none !important;
         }
     </style>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-71Z637FFS8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-71Z637FFS8');
+</script>
 </head>
 <body>
 
@@ -270,6 +279,13 @@
         } catch(e){} }
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     }
+    // --- GA4 追蹤工具 ---
+function trackGameEvent(eventName, params = {}) {
+    if (typeof gtag === 'function') {
+        gtag('event', eventName, params);
+        console.log(`📡 GA4 Event Sent: ${eventName}`, params); // 開發時可在 Console 看到
+    }
+}
 
     // --- 2. 遊戲資料 ---
     
@@ -554,6 +570,10 @@
         // 只有在場景改變時才執行大部分的更新
         if (!isUpdate || isResuming) {
             gameState.currentScene = id; // 更新當前場景
+            trackGameEvent('scene_view', {
+                scene_id: id,
+                scene_title: scene.title
+            });
             const vis = document.getElementById('visual-panel');
             const header = document.getElementById('scene-title');
             const feedback = document.getElementById('feedback-area');
@@ -778,12 +798,20 @@
 
     function handleAccusation(name) {
         if (name === '魯道夫') {
+            trackGameEvent('game_complete', {
+            result: 'success',
+            mistakes: gameState.wrongAccusationCount
+        });
             renderScene('ending_confession');
             playConfessionSequence();
         } else {
             const isSamePerson = (gameState.lastAccused === name);
             gameState.lastAccused = name; 
             gameState.wrongAccusationCount++;
+            trackGameEvent('accusation_failed', {
+            accused_char: name,
+            current_mistakes: gameState.wrongAccusationCount
+        });
             
             if (isSamePerson) {
                 playAngryDenialSequence(name);
@@ -968,6 +996,12 @@
         }
         
         gameState.usedActions.add(actionStr);
+        let parts = actionStr.split(':'); 
+        trackGameEvent('player_choice', {
+        action_type: parts[0],      // 記錄動作類型 (如 check, goto, chat)
+        action_target: parts[1],    // 記錄目標 (如 engine, lab)
+        button_text: btnText || ''  // 記錄按鈕上的文字
+        });
         saveGameState(); // 行動後保存
 
         if (actionStr === 'play_prologue') {
