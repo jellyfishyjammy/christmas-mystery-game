@@ -494,14 +494,14 @@ function trackGameEvent(eventName, params = {}) {
         start_screen: {
             title: "聖誕夜的消失齒輪",
             image: "title_bg.jpg", // 請補上此圖片
-            initText: "歡迎來到聖誕村偵探事務所。<br><br>今晚是平安夜，但時間卻停止了。<br>所有的線索都指向三個嫌疑人...<br><br>準備好找出真相了嗎？",
-            choices: [{ text: "🎮 進入遊戲", action: "start_game" }]
+            initText: "平安夜的風雪呼嘯，眼前這棟透著暖光的小木屋，是這片銀白世界中唯一的避風港。<br><br>您低頭看了一眼手中那封神秘的邀請函，署名是那位傳說中的人物。為何在最忙碌的今晚，特地邀請一位偵探前來？<br><br>懷著些許好奇與期待，您踏上積雪的階梯，手搭上了厚重的木門...<br>門後的壁爐火光，正等待著您的到來。",
+            choices: [{ text: "🚪 推開大門", action: "start_game" }]
         },
         // --- 新增：完結畫面 ---
         game_fin: {
             title: "THE END",
             image: "fin_bg.jpg", // 請補上此圖片
-            initText: "感謝您的遊玩！<br>聖誕村的時間再次流動，這一切都歸功於您。<br><br>祝您聖誕快樂！",
+            initText: "感謝您的遊玩！<br>聖誕村的時間再次流動，這一切都歸功於您。<br><br>祝您聖誕佳節快樂！",
             choices: [{ text: "🔄 再玩一次", action: "reload" }]
         },
         opening_frozen: {
@@ -764,7 +764,7 @@ function trackGameEvent(eventName, params = {}) {
             gameState.visited.add('opening');
             runDialogueSequence([
                 // 修改：將原本 initText 的內容搬移至此，使其可以一句一句播放
-                {t: "在一處溫暖的木屋中，你低頭看著手中的金箔邀請函...", type: 'system'},
+                {t: "在溫暖的木屋中，你低頭看著手中的金箔邀請函...", type: 'system'},
                 {t: "『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", type: 'system'},
                 
                 // 接續原本的劇情
