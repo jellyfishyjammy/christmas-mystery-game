@@ -241,6 +241,77 @@
             line-height: 1.8; }
         .hidden { display: none !important;
         }
+        /* --- 📱 手機版適配 (RWD) --- */
+        @media (max-width: 768px) {
+            body {
+                /* 手機版背景改為單色，避免漸層在長頁面跑版 */
+                background-image: none;
+                background-color: #050510;
+                /* 確保內容從頂部開始，防止因 flex 置中而被切掉 */
+                align-items: flex-start; 
+            }
+
+            #game-container {
+                /* 寬度與高度改為佔滿螢幕 */
+                width: 100% !important;
+                height: 100vh !important;
+                height: 100dvh !important; /* 針對手機瀏覽器網址列優化 */
+                
+                /* 移除圓角與邊框，讓畫面更像 App */
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                
+                /* 關鍵：改為「直式」排列 (原本是橫式 row) */
+                flex-direction: column; 
+            }
+
+            #visual-panel {
+                /* 圖片區塊：佔畫面高度的 40% */
+                flex: 4; 
+                border-right: none;
+                border-bottom: 2px solid #333;
+                width: 100%;
+            }
+
+            #narrative-panel {
+                /* 對話區塊：佔畫面高度的 60% */
+                flex: 6; 
+                width: 100%;
+            }
+
+            #header-bar {
+                padding: 10px 15px;
+                min-height: 40px;
+            }
+
+            #scene-title {
+                font-size: 16px; /* 標題字縮小 */
+            }
+
+            /* 優化對話框閱讀體驗 */
+            #feedback-area {
+                padding: 15px;
+            }
+            .bubble {
+                font-size: 15px;
+                padding: 10px 14px;
+                max-width: 95%; /* 讓泡泡寬一點 */
+            }
+
+            /* 優化按鈕點擊區域 */
+            .choice-btn {
+                padding: 14px; /* 加大按鈕，手指好點 */
+                font-size: 16px;
+            }
+
+            /* 優化調查熱點 */
+            .hotspot {
+                padding: 10px 15px; /* 加大熱點範圍 */
+                font-size: 14px;
+                transform: translate(-50%, -50%); /* 確保定位點在中心 */
+            }
+        }
     </style>
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-71Z637FFS8"></script>
