@@ -115,25 +115,23 @@
         .char-name { font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #888;
         }
 
-        .char-spark { border-left-color: #d40 !important;
-        }
-        .char-spark .char-name { color: #d40 !important;
-        }
+        /* --- 1. 修改：角色對話框顏色設定 --- */
+        /* Spark: 橘色 */
+        .char-spark { border-left-color: #ff3333 !important; }
+	.char-spark .char-name { color: #ff3333 !important; }
 
-        .char-cookie { border-left-color: #da0 !important;
-        }
-        .char-cookie .char-name { color: #da0 !important;
-        }
+        /* Cookie: 藍色 */
+        .char-cookie { border-left-color: #33aaff !important; }
+        .char-cookie .char-name { color: #33aaff !important; }
 
-        .char-rudolph { border-left-color: #0a4 !important;
-        }
-        .char-rudolph .char-name { color: #0a4 !important;
-        }
+        /* Rudolph: 咖啡色 */
+        .char-rudolph { border-left-color: #8B4513 !important; }
+        .char-rudolph .char-name { color: #8B4513 !important; }
 
-        .char-barnaby { border-left-color: #b4f !important;
-        }
-        .char-barnaby .char-name { color: #b4f !important;
-        }
+        /* Barnaby: 綠色 */
+        .char-barnaby { border-left-color: #28a745 !important; }
+        .char-barnaby .char-name { color: #28a745 !important; }
+
 
         .bubble-player {
             align-self: flex-end;
@@ -187,6 +185,7 @@
             gap: 10px;
         }
 
+        /* --- 2. 修改：按鈕互動樣式優化 --- */
         .choice-btn {
             background: linear-gradient(135deg, #2d2d35 0%, #25252b 100%);
             color: #e0e0e0;
@@ -196,15 +195,29 @@
             cursor: pointer;
             border-radius: 8px;
             font-size: 15px;
-            transition: all 0.2s;
+            transition: all 0.1s; /* 讓反應更靈敏 */
             display: flex;
             align-items: center;
+            user-select: none; /* 防止手機長按選取文字 */
+            -webkit-tap-highlight-color: transparent; /* 移除手機點擊預設藍框 */
         }
-        .choice-btn:hover {
-            background: #383840;
+        
+        /* 只在支援滑鼠懸停的裝置上啟用 Hover 效果 (解決手機點擊後卡在黃色的問題) */
+        @media (hover: hover) {
+            .choice-btn:hover {
+                background: #383840;
+                border-color: #d4af37;
+                color: #d4af37;
+                transform: translateX(5px);
+            }
+        }
+
+        /* 新增：Active 狀態 (點下去的瞬間)，放開後會立刻復原 */
+        .choice-btn:active {
+            background: #444;
             border-color: #d4af37;
             color: #d4af37;
-            transform: translateX(5px);
+            transform: scale(0.98); /* 微微縮小產生按壓感 */
         }
         
         .replay-btn {
@@ -428,22 +441,23 @@ function trackGameEvent(eventName, params = {}) {
 
     const contentData = {
         profiles: {
+            // 注意：這裡也同步更新了左邊框的顏色，以符合新的配色需求
             spark: `
-                <div class="profile-content" style="border-left:4px solid #d40; padding-left:10px;">
+                <div class="profile-content" style="border-left:4px solid #ff3333; padding-left:10px;">
                 <b>【史派克 Spark】</b><br>
                 🔧 <b>職業：</b> 精靈發明家<br>
                 📏 <b>身高：</b> 35 顆螺絲帽高<br>
                 📋 <b>狀態：</b> 滿身機油，正在敲打機械。<br>
                 </div>`,
             cookie: `
-                <div class="profile-content" style="border-left:4px solid #da0; padding-left:10px;">
+                <div class="profile-content" style="border-left:4px solid #33aaff; padding-left:10px;">
                 <b>【庫奇 Cookie】</b><br>
                 🍪 <b>職業：</b> 皇家大廚<br>
                 📏 <b>身高：</b> 20 層薑餅人高<br>
                 📋 <b>狀態：</b> 在廚房焦慮地踱步。<br>
                 </div>`,
             rudolph: `
-                <div class="profile-content" style="border-left:4px solid #0a4; padding-left:10px;">
+                <div class="profile-content" style="border-left:4px solid #8B4513; padding-left:10px;">
                 <b>【魯道夫 Rudolph】</b><br>
                 🦌 <b>職業：</b> 領航馴鹿<br>
                 📏 <b>身高：</b> 1.5 棵聖誕樹高<br>
@@ -493,7 +507,7 @@ function trackGameEvent(eventName, params = {}) {
         opening_frozen: {
             title: "11:59 的聖誕村",
             image: "invitation.jpg", 
-            initText: "在一處溫暖的木屋中，你低頭看著手中的金箔邀請函：『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", 
+            initText: "",  // 修改：清空這裡，改由下方程式碼動態播放
             choices: [{ text: "等待約定時間", action: "play_prologue" }]
         },
         prologue: {
@@ -749,6 +763,11 @@ function trackGameEvent(eventName, params = {}) {
         if (id === 'opening_frozen' && !gameState.visited.has('opening') && !isResuming) {
             gameState.visited.add('opening');
             runDialogueSequence([
+                // 修改：將原本 initText 的內容搬移至此，使其可以一句一句播放
+                {t: "在一處溫暖的木屋中，你低頭看著手中的金箔邀請函...", type: 'system'},
+                {t: "『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", type: 'system'},
+                
+                // 接續原本的劇情
                 {t: "你坐在溫暖的壁爐前，牆上的掛鐘正滴答作響。", type: 'system'},
                 {t: "秒針指向了 11:59 分 59 秒。", type: 'system'},
                 {t: "原本該響起的整點鐘聲... 卻沒有出現。", type: 'system'},
@@ -873,7 +892,7 @@ function trackGameEvent(eventName, params = {}) {
 
         runDialogueSequence([
             {t: "（碰！接待室的大門被撞開！）", type: "system"},
-            {t: "聖誕老人的助手——巴納比，慌張地衝了進來，差點絆倒。", type: "system"},
+            {t: "聖誕老人的助手長——巴納比，慌張地衝了進來，差點被地毯絆倒。", type: "system"},
             {t: "聖誕老人！大事不好了... 咦？你是？", type: "char", name: "巴納比"},
             {t: "啊！你是那封邀請函的... 偵探！感謝老天你在這裡！", type: "char", name: "巴納比"}, 
             {t: "聖誕老人不見了，而「永恆齒輪」剛剛被偷走！現在時間完全停止了！", type: "char", name: "巴納比"},
@@ -1325,12 +1344,12 @@ function trackGameEvent(eventName, params = {}) {
                     {t: "Ho Ho Ho！做得好啊，各位！", type: 'santa'}, // 先出聲音
                     {t: "（大家驚訝地抬起頭，尋找聲音的來源...）", type: 'system'}
                 ], () => {
-                     const menu = document.getElementById('interaction-bar');
-                     const btn = document.createElement('button');
-                     btn.className = 'choice-btn';
-                     btn.innerText = "🔹 轉身看是誰？";
-                     btn.onclick = () => handleAction('ending:show_face'); // 再看臉
-                     menu.appendChild(btn);
+                      const menu = document.getElementById('interaction-bar');
+                      const btn = document.createElement('button');
+                      btn.className = 'choice-btn';
+                      btn.innerText = "🔹 轉身看是誰？";
+                      btn.onclick = () => handleAction('ending:show_face'); // 再看臉
+                      menu.appendChild(btn);
                 });
             } else if (target === 'show_face') {
                 renderScene('ending_real_face');
