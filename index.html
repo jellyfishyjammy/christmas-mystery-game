@@ -500,9 +500,14 @@ function trackGameEvent(eventName, params = {}) {
         // --- 新增：完結畫面 ---
         game_fin: {
             title: "THE END",
-            image: "fin_bg.jpg", // 請補上此圖片
-            initText: "感謝您的遊玩！<br><br>聖誕村的時間再次流動，<br>這一切都歸功於您。<br><br>祝您聖誕佳節快樂！",
-            choices: [{ text: "🔄 再玩一次", action: "reload" }]
+            image: "fin_bg.jpg", 
+            initText: "感謝您的遊玩！<br><br>聖誕村的時間再次流動，<br>這一切都歸功於您。<br><br>為了幫助我們做出更好的遊戲，<br>懇請大偵探花 1 分鐘填寫回饋！",
+            choices: [
+                // ▼ 新增這一行 ▼
+                { text: "📋 填寫偵探回饋單", action: "open_survey" },
+                // ▲ 新增這一行 ▲
+                { text: "🔄 再玩一次", action: "reload" }
+            ]
         },
         opening_frozen: {
             title: "11:59 的聖誕村",
@@ -1123,7 +1128,7 @@ function trackGameEvent(eventName, params = {}) {
         // 點擊按鈕時，清除對話推進監聽
         clickArea.removeEventListener('click', processNextDialogueLine);
         isDialogueRunning = false;
-        
+
         // 清除計時器
         clearTimeout(dialogueTimer); 
 
@@ -1132,6 +1137,12 @@ function trackGameEvent(eventName, params = {}) {
         
         const [type, target] = actionStr.split(':');
 
+        if (actionStr === 'open_survey') {
+            // 開啟你的 Google Form
+            window.open('https://forms.gle/7AExAzyq7ACQnaX57', '_blank');
+            return;
+        }
+        
         if (actionStr === 'start_game') {
             // [新增] 點擊開始遊戲，觸發 game_start
             trackGameEvent('game_start', {
