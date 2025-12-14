@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聖誕夜的消失齒輪</title>
     <style>
+        /* --- 修改點 4：極簡化音樂按鈕 --- */
+        #music-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px; /* 固定在右上角 */
+            width: 30px;
+            height: 30px;
+            /* 移除背景色和邊框，只留文字顏色 */
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.3); /* 預設非常透明低調 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 200; 
+            font-size: 24px;
+            transition: all 0.5s ease;
+            user-select: none;
+            outline: none;
+        }
+
+        #music-toggle:hover {
+            color: rgba(78, 205, 196, 0.8); /* 滑鼠碰到時帶點科技藍 */
+            transform: scale(1.1);
+            text-shadow: 0 0 8px rgba(78, 205, 196, 0.4);
+        }
+
         /* --- 視覺風格 --- */
         body {
             background-color: #050510;
@@ -27,7 +55,7 @@
             border-radius: 16px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
             display: flex;
-            position: relative;
+            position: relative; 
             overflow: hidden;
         }
 
@@ -38,7 +66,12 @@
             background-size: cover;
             background-position: center;
             border-right: 2px solid #222;
-            transition: background-image 0.5s ease;
+            transition: opacity 0.4s ease-in-out;
+            opacity: 1;
+        }
+        
+        .fade-out {
+            opacity: 0 !important;
         }
 
         .overlay-gradient {
@@ -62,9 +95,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
         }
-        #scene-title { margin: 0; color: #d4af37; font-size: 20px; font-weight: bold; letter-spacing: 1px;
+        
+        /* --- 修改點 1：狀態欄往左移，避免跟右上角的音樂按鈕打架 --- */
+        #status-display {
+            font-size: 13px; 
+            color: #888;
+            margin-right: 60px; /* 強制右邊留白，避開音樂按鈕 */
         }
+
+        #scene-title { margin: 0; color: #d4af37; font-size: 20px; font-weight: bold; letter-spacing: 1px; }
 
         #feedback-area {
             flex: 1;
@@ -76,11 +117,22 @@
             gap: 15px;
             scroll-behavior: smooth;
         }
-        #feedback-area::-webkit-scrollbar { width: 8px;
+        #feedback-area::-webkit-scrollbar { width: 8px; }
+        #feedback-area::-webkit-scrollbar-track { background: #222; }
+        #feedback-area::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-4px) rotate(-1deg); }
+            40% { transform: translateX(4px) rotate(1deg); }
+            60% { transform: translateX(-4px) rotate(-1deg); }
+            80% { transform: translateX(4px) rotate(1deg); }
+            100% { transform: translateX(0); }
         }
-        #feedback-area::-webkit-scrollbar-track { background: #222;
-        }
-        #feedback-area::-webkit-scrollbar-thumb { background: #444; border-radius: 4px;
+        
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both !important;
+            transform: translate3d(0, 0, 0); 
         }
 
         .bubble {
@@ -112,26 +164,19 @@
             border-bottom-left-radius: 2px;
             border-left: 4px solid #888;
         }
-        .char-name { font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #888;
-        }
+        .char-name { font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px; color: #888; }
 
-        /* --- 1. 修改：角色對話框顏色設定 --- */
-        /* Spark: 橘色 */
         .char-spark { border-left-color: #ff3333 !important; }
         .char-spark .char-name { color: #ff3333 !important; }
 
-        /* Cookie: 藍色 */
         .char-cookie { border-left-color: #33aaff !important; }
         .char-cookie .char-name { color: #33aaff !important; }
 
-        /* Rudolph: 咖啡色 */
         .char-rudolph { border-left-color: #8B4513 !important; }
         .char-rudolph .char-name { color: #8B4513 !important; }
 
-        /* Barnaby: 綠色 */
         .char-barnaby { border-left-color: #28a745 !important; }
         .char-barnaby .char-name { color: #28a745 !important; }
-
 
         .bubble-player {
             align-self: flex-end;
@@ -172,8 +217,7 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
-        @keyframes slideUp { from { opacity: 0;
-            transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         #interaction-bar {
             padding: 20px;
@@ -185,7 +229,6 @@
             gap: 10px;
         }
 
-        /* --- 2. 修改：按鈕互動樣式優化 --- */
         .choice-btn {
             background: linear-gradient(135deg, #2d2d35 0%, #25252b 100%);
             color: #e0e0e0;
@@ -195,14 +238,13 @@
             cursor: pointer;
             border-radius: 8px;
             font-size: 15px;
-            transition: all 0.1s; /* 讓反應更靈敏 */
+            transition: all 0.1s;
             display: flex;
             align-items: center;
-            user-select: none; /* 防止手機長按選取文字 */
-            -webkit-tap-highlight-color: transparent; /* 移除手機點擊預設藍框 */
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        /* 只在支援滑鼠懸停的裝置上啟用 Hover 效果 (解決手機點擊後卡在黃色的問題) */
         @media (hover: hover) {
             .choice-btn:hover {
                 background: #383840;
@@ -212,12 +254,11 @@
             }
         }
 
-        /* 新增：Active 狀態 (點下去的瞬間)，放開後會立刻復原 */
         .choice-btn:active {
             background: #444;
             border-color: #d4af37;
             color: #d4af37;
-            transform: scale(0.98); /* 微微縮小產生按壓感 */
+            transform: scale(0.98);
         }
         
         .replay-btn {
@@ -250,116 +291,55 @@
             color: #000;
         }
         
-        .profile-content { text-align: left;
-            line-height: 1.8; }
-        .hidden { display: none !important;
-        }
-        /* --- 📱 手機版適配 (RWD) - 最終修正版 --- */
+        .profile-content { text-align: left; line-height: 1.8; }
+        .hidden { display: none !important; }
+        
+        /* 手機版適配 (RWD) */
         @media (max-width: 768px) {
-            /* 全域設定：防止任何元素的 Padding 撐大寬度導致左右滑動 */
-            * {
-                box-sizing: border-box;
-            }
-
-            body {
-                /* 禁止整個網頁捲動，只允許內部區塊捲動 */
-                overflow: hidden; 
-                /* 關鍵：強制禁止左右滑動 */
-                overflow-x: hidden; 
-                background-image: none;
-                background-color: #050510;
-                align-items: flex-start;
-                width: 100%;
-            }
-
-            #game-container {
-                width: 100% !important;
-                height: 100vh !important;
-                height: 100dvh !important; 
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
-                flex-direction: column;
-                /* 雙重保險：容器內部也禁止左右滑動 */
-                overflow-x: hidden; 
-            }
-
-            #visual-panel {
-                /* 圖片區塊固定高度，不會隨捲動移動 */
-                flex: 0 0 38vh; 
-                width: 100%;
-                border-right: none;
-                border-bottom: 2px solid #333;
-                z-index: 10;
-                position: relative;
-            }
-
-            #narrative-panel {
-                /* 下方區域填滿剩餘空間 */
-                flex: 1; 
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                min-height: 0;
-                overflow-x: hidden; /* 確保對話區也不會橫向滑動 */
-            }
-
-            #header-bar {
-                padding: 10px 15px;
-                min-height: 40px;
-                flex-shrink: 0;
-                width: 100%; /* 確保不超過寬度 */
-            }
-
-            #feedback-area {
-                flex: 1;
-                overflow-y: auto; /* 允許垂直捲動 */
-                overflow-x: hidden; /* 禁止水平捲動 */
-                padding: 15px;
-                scroll-behavior: smooth;
-                -webkit-overflow-scrolling: touch;
-                width: 100%;
-            }
-
-            #interaction-bar {
-                flex-shrink: 0;
-                padding: 15px;
-                z-index: 10;
-                background: #18181d;
-                width: 100%;
-            }
-
-            /* --- 樣式微調 --- */
+            * { box-sizing: border-box; }
+            body { overflow: hidden; overflow-x: hidden; background-image: none; background-color: #050510; align-items: flex-start; width: 100%; }
+            #game-container { width: 100% !important; height: 100vh !important; height: 100dvh !important; border: none; border-radius: 0; box-shadow: none; flex-direction: column; overflow-x: hidden; }
+            #visual-panel { flex: 0 0 38vh; width: 100%; border-right: none; border-bottom: 2px solid #333; z-index: 10; position: relative; }
+            #narrative-panel { flex: 1; width: 100%; display: flex; flex-direction: column; min-height: 0; overflow-x: hidden; }
+            #header-bar { padding: 10px 15px; min-height: 40px; flex-shrink: 0; width: 100%; }
+            #feedback-area { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 15px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; width: 100%; }
+            #interaction-bar { flex-shrink: 0; padding: 15px; z-index: 10; background: #18181d; width: 100%; }
             #scene-title { font-size: 16px; }
-            .bubble { 
-                font-size: 15px; 
-                padding: 10px 14px; 
-                max-width: 100%; /* 防止氣泡太寬撐開頁面 */
-            }
-            .choice-btn { 
-                padding: 14px; 
-                font-size: 16px; 
-                width: 100%; /* 確保按鈕不超寬 */
-            }
-            .hotspot { 
-                padding: 10px 15px; 
-                font-size: 14px; 
-                transform: translate(-50%, -50%); 
-            }
+            .bubble { font-size: 15px; padding: 10px 14px; max-width: 100%; }
+            .choice-btn { padding: 14px; font-size: 16px; width: 100%; }
+            .hotspot { padding: 10px 15px; font-size: 14px; transform: translate(-50%, -50%); }
+            
+            #music-toggle { top: 10px; right: 10px; }
         }
     </style>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-71Z637FFS8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-71Z637FFS8');
-</script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-71Z637FFS8');
+    </script>
 </head>
 <body>
 
 <div id="game-container">
+    <div id="audio-manager" style="display:none;">
+        <audio id="bgm-main" loop>
+            <source src="bgm_main.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="bgm-tension" loop>
+            <source src="bgm_tension.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="bgm-emotional" loop>
+            <source src="bgm_emotional.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="bgm-santa" loop>
+            <source src="bgm_santa.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <button id="music-toggle" onclick="toggleMusic()" title="開關音樂">🔊</button>
+
     <div id="visual-panel">
         <div class="overlay-gradient"></div>
     </div>
@@ -367,7 +347,7 @@
     <div id="narrative-panel">
         <div id="header-bar">
             <h2 id="scene-title">系統啟動中...</h2>
-            <div style="font-size:13px; color:#888;">🎒 狀態: <span id="game-status" style="color:#4ecdc4">搜查中</span></div>
+            <div id="status-display">🎒 狀態: <span id="game-status" style="color:#4ecdc4">搜查中</span></div>
         </div>
 
         <div id="feedback-area"></div>
@@ -376,27 +356,136 @@
 </div>
 
 <script>
-  
+    // --- 修改點 3：進階音樂控制系統 (BGM Manager) ---
+    
+    const BGM_VOL_MAX = 0.4; // 最大音量
+    let isMusicAllowed = true; // 預設為開，等待第一個互動
+    let currentTrackId = null; 
+    let fadeInterval = null; 
+
+    function fadeIn(audioElement) {
+        if (!audioElement) return;
+        audioElement.volume = 0;
+        audioElement.play().catch(e => console.log("等待互動播放"));
+        
+        let vol = 0;
+        const interval = setInterval(() => {
+            if (vol < BGM_VOL_MAX) {
+                vol += 0.02; 
+                audioElement.volume = Math.min(vol, BGM_VOL_MAX);
+            } else {
+                clearInterval(interval);
+            }
+        }, 100); 
+    }
+
+    function fadeOutAndStop(audioElement) {
+        if (!audioElement) return;
+        let vol = audioElement.volume;
+        const interval = setInterval(() => {
+            if (vol > 0) {
+                vol -= 0.05; 
+                audioElement.volume = Math.max(vol, 0);
+            } else {
+                clearInterval(interval);
+                audioElement.pause();
+                audioElement.currentTime = 0; 
+            }
+        }, 100);
+    }
+
+    function switchTrack(newTrackId) {
+        if (currentTrackId === newTrackId) return; 
+
+        if (currentTrackId) {
+            const oldAudio = document.getElementById(currentTrackId);
+            fadeOutAndStop(oldAudio);
+        }
+
+        if (isMusicAllowed && newTrackId) {
+            const newAudio = document.getElementById(newTrackId);
+            fadeIn(newAudio);
+        }
+        
+        currentTrackId = newTrackId;
+    }
+
+    // 手動開關按鈕邏輯 (已加入數據追蹤)
+    function toggleMusic() {
+        const btn = document.getElementById('music-toggle');
+        
+        if (isMusicAllowed) {
+            // =========== 情況 A：現在是開啟，玩家想要「關閉」 ===========
+            
+            // 1. 原本的功能：變更狀態與圖示
+            isMusicAllowed = false;
+            btn.innerText = "🔇"; 
+            btn.style.opacity = "0.5";
+            
+            // 2. 原本的功能：暫停音樂
+            if (currentTrackId) {
+                const audio = document.getElementById(currentTrackId);
+                audio.pause();
+            }
+
+            // ★★★ 新增：記錄數據「玩家關閉了音樂」 ★★★
+            // 這樣你就能分析：是不是某個場景太吵？還是學生不喜歡背景音樂？
+            trackGameEvent('ui_interaction', {
+                element: 'music_toggle', // 互動元件：音樂開關
+                action: 'mute',          // 動作：靜音
+                scene: gameState.currentScene // 記錄發生在什麼場景
+            });
+
+        } else {
+            // =========== 情況 B：現在是靜音，玩家想要「開啟」 ===========
+
+            // 1. 原本的功能：變更狀態與圖示
+            isMusicAllowed = true;
+            btn.innerText = "🔊";
+            btn.style.opacity = "1";
+
+            // 2. 原本的功能：播放音樂
+            if (currentTrackId) {
+                const audio = document.getElementById(currentTrackId);
+                fadeIn(audio);
+            } else {
+                switchTrack('bgm-main');
+            }
+
+            // ★★★ 新增：記錄數據「玩家開啟了音樂」 ★★★
+            trackGameEvent('ui_interaction', {
+                element: 'music_toggle',
+                action: 'unmute',        // 動作：取消靜音
+                scene: gameState.currentScene
+            });
+        }
+    }
+
+    function tryInitMusic() {
+        if (isMusicAllowed && currentTrackId) {
+            const audio = document.getElementById(currentTrackId);
+            // 只有當音樂暫停時才播放，避免重複觸發
+            if (audio.paused) {
+                fadeIn(audio);
+            }
+        }
+    }
+
     // --- 1. 初始化 ---
     let audioCtx = null;
     function playSound(type) {
-        if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        } catch(e){} }
+        if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} }
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     }
-    // --- GA4 追蹤工具 ---
-function trackGameEvent(eventName, params = {}) {
-    if (typeof gtag === 'function') {
-        gtag('event', eventName, params);
-        console.log(`📡 GA4 Event Sent: ${eventName}`, params); // 開發時可在 Console 看到
+    
+    function trackGameEvent(eventName, params = {}) {
+        if (typeof gtag === 'function') {
+            gtag('event', eventName, params);
+        }
     }
-}
 
     // --- 2. 遊戲資料 ---
-    
-    // --- 遊戲狀態初始化與本地存儲 ---
     const STORAGE_KEY = 'christmasMysteryGameSave';
-    
     let gameState = {
         visited: new Set(),
         usedActions: new Set(),
@@ -404,12 +493,11 @@ function trackGameEvent(eventName, params = {}) {
         sceneLogs: {}, 
         wrongAccusationCount: 0,
         lastAccused: null,
-        // --- 新增：數據分析用變數 ---
-        startTime: Date.now(), // 記錄開始時間 (計算總遊玩時長)
-        actionTotal: 0         // 記錄總互動次數 (分析是探索型還是直覺型玩家)
+        startTime: Date.now(), 
+        actionTotal: 0,
+        hasKey: false
     };
 
-    // 儲存狀態的函數
     function saveGameState() {
         const stateToSave = {
             ...gameState,
@@ -419,7 +507,6 @@ function trackGameEvent(eventName, params = {}) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
     }
 
-    // 載入狀態的函數
     function loadGameState() {
         const savedState = localStorage.getItem(STORAGE_KEY);
         if (savedState) {
@@ -429,25 +516,24 @@ function trackGameEvent(eventName, params = {}) {
                 visited: new Set(parsedState.visited),
                 usedActions: new Set(parsedState.usedActions),
             };
-            // 由於 sceneLogs 中的 HTML 可能包含動態產生的內容，我們只需要載入當前場景的日誌
             if (gameState.currentScene && gameState.sceneLogs[gameState.currentScene]) {
-                return true; 
+                return true;
             }
         }
         return false;
     }
-    // --- 遊戲狀態初始化與本地存儲 End ---
-
 
     const contentData = {
         profiles: {
-            // 注意：這裡也同步更新了左邊框的顏色，以符合新的配色需求
             spark: `
                 <div class="profile-content" style="border-left:4px solid #ff3333; padding-left:10px;">
                 <b>【史派克 Spark】</b><br>
                 🔧 <b>職業：</b> 精靈發明家<br>
                 📏 <b>身高：</b> 35 顆螺絲帽高<br>
                 📋 <b>狀態：</b> 滿身機油，正在敲打機械。<br>
+                <hr style="border-color:#444;">
+                <b>【健康紀錄】</b> 手部神經顫抖（長期拿重物）。<span style="color:#ff3333">醫生建議：禁止精細作業。</span><br>
+                <b>【勤務紀錄】</b> 申請「夜間加班」研發電池。多次抱怨能源不足。
                 </div>`,
             cookie: `
                 <div class="profile-content" style="border-left:4px solid #33aaff; padding-left:10px;">
@@ -455,6 +541,9 @@ function trackGameEvent(eventName, params = {}) {
                 🍪 <b>職業：</b> 皇家大廚<br>
                 📏 <b>身高：</b> 20 層薑餅人高<br>
                 📋 <b>狀態：</b> 在廚房焦慮地踱步。<br>
+                <hr style="border-color:#444;">
+                <b>【健康紀錄】</b> 體重與體脂過高，膝蓋負重過大。<span style="color:#33aaff">醫生建議：避免爬樓梯與高處作業。</span><br>
+                <b>【勤務紀錄】</b> 申請「參觀鐘樓」被拒絕。目擊紀錄：在塔下徘徊測量尺寸。
                 </div>`,
             rudolph: `
                 <div class="profile-content" style="border-left:4px solid #8B4513; padding-left:10px;">
@@ -462,18 +551,22 @@ function trackGameEvent(eventName, params = {}) {
                 🦌 <b>職業：</b> 領航馴鹿<br>
                 📏 <b>身高：</b> 1.5 棵聖誕樹高<br>
                 📋 <b>狀態：</b> 躺在稻草堆中，蓋著厚毯子。<br>
+                <hr style="border-color:#444;">
+                <b>【健康紀錄】</b> 體溫持續過高 (Overheating)，鼻頭紅腫。<br>
+                <b>【勤務紀錄】</b> 連續三次「飛行訓練」缺席。<span style="color:#8B4513">備註：請假理由是「不想飛」。</span>
                 </div>`
         },
         descriptions: {
             lab: "實驗室雜亂無章。中央放著一台巨大的火箭引擎，周圍散落著無數螺絲和齒輪。",
             kitchen: "廚房桌上放著一盤剛裝飾好的甜甜圈，空氣中充滿了甜膩的香氣。庫奇看起來非常緊張。",
             barn: "馬廄很安靜。魯道夫躺在稻草堆裡睡覺，偶爾傳來呼嚕聲。",
-            tower_top: "（調查地點）鐘樓塔頂寒風凜冽。原本放置「永恆齒輪」的基座現在空空如也。四周除了雪，沒有其他東西。"
+            tower_top: "（調查地點）鐘樓塔頂寒風凜冽。原本放置「永恆齒輪」的基座現在空空如也。四周除了雪，沒有其他東西。",
+            cabin: "小木屋屋內非常溫暖。辦公室內的佈置非常溫馨。身為完美的助手，巴納比已經把相關資料都整理進嫌疑人檔案裡了。"
         },
         clues: {
             spark: {
-                engine: "【調查結果】火箭引擎處於半成品狀態。火箭的核心動力區被畫了紅圈，旁邊的設計圖寫著：「現有電池動力不足，急需『永恆』級別的能源替代...」", // 動機
-                grappling_hook: "【調查結果】一把改造過的「強力磁鐵回收爪」，這是可以遠端吸取金屬的裝置。爪子上沾滿了厚厚一層、還在滴落的黑色機油。" // 手段+排除關鍵
+                engine: "【調查結果】火箭引擎處於半成品狀態。火箭的核心動力區被畫了紅圈，旁邊的設計圖寫著：「現有電池動力不足，急需『永恆』級別的能源替代...」",
+                grappling_hook: "【調查結果】一把改造過的「強力磁鐵回收爪」，這是可以遠端吸取金屬的裝置。爪子上沾滿了厚厚一層、還在滴落的黑色機油。"
             },
             cookie: {
                 cookie_powder: "【調查結果】桌上有一盤灑滿糖粉的甜甜圈。糖粉呈現特殊的螢光藍色。這種粉末顆粒極細，帶有靜電，極易吸附在衣物或皮膚表面。",
@@ -481,38 +574,34 @@ function trackGameEvent(eventName, params = {}) {
             },
             tower: {
                 window_trace: "【調查結果】20 公尺高的通風窗外，窗台積著厚厚的雪。你仔細檢查了雪面：呈現完美的自然堆積曲線，沒有任何腳印、沒有梯子頂端的壓痕，也沒有繩索拖曳的軌跡。",
-                blue_powder_scene: "【調查結果】原本放置齒輪的基座空空如也。基座表面非常乾淨，完全沒有油漬，但有採集到了螢光藍色粉末。" // 排除史派克的關鍵：現場無油
+                blue_powder_scene: "【調查結果】原本放置齒輪的基座空空如也。基座表面非常乾淨，完全沒有油漬，但有採集到了螢光藍色粉末。" 
             },
             rudolph: {
                 donut_box: "【調查結果】角落的甜甜圈盒子是空的。雖然魯道夫閉著眼，但在他鹿角與鼻尖上，沾著些許顯眼的藍色粉末。",
-                blanket_hidden: "【調查結果】你將手伸進毯子下方。魯道夫的皮毛摸起來濕潤且溫度很高。當他吐氣時，鼻孔噴出了明顯的白霧。" // 生理證據
+                blanket_hidden: "【調查結果】你將手伸進毯子下方。魯道夫的皮毛摸起來濕潤且溫度很高。當他吐氣時，鼻孔噴出了明顯的白霧。" 
             }
         }
     };
     const scenes = {
-        // --- 修改：開始畫面 (修正時間線與氛圍) ---
         start_screen: {
             title: "聖誕夜的消失齒輪",
             image: "title_bg.jpg", 
-            initText: "", // 這裡留空，改由 window.onload 觸發動態文字
+            initText: "", 
             choices: [{ text: "🚪 推開大門", action: "start_game" }]
         },
-        // --- 新增：完結畫面 ---
         game_fin: {
             title: "THE END",
             image: "fin_bg.jpg", 
             initText: "感謝您的遊玩！<br><br>聖誕村的時間再次流動，<br>這一切都歸功於您。<br><br>為了幫助我們做出更好的遊戲，<br>懇請大偵探花 1 分鐘填寫回饋！",
             choices: [
-                // ▼ 新增這一行 ▼
                 { text: "📋 填寫偵探回饋單", action: "open_survey" },
-                // ▲ 新增這一行 ▲
                 { text: "🔄 再玩一次", action: "reload" }
             ]
         },
         opening_frozen: {
             title: "11:59 的聖誕村",
             image: "invitation.jpg", 
-            initText: "",  // 修改：清空這裡，改由下方程式碼動態播放
+            initText: "",
             choices: [{ text: "等待約定時間", action: "play_prologue" }]
         },
         prologue: {
@@ -540,11 +629,35 @@ function trackGameEvent(eventName, params = {}) {
                 { label: "🚀 實驗室", top: "40%", left: "15%", action: "goto:lab" },
                 { label: "🍪 點心房", top: "40%", left: "75%", action: "goto:kitchen" },
                 { label: "🦌 馬廄", top: "70%", left: "50%", action: "goto:barn" },
-                { label: "🏰 鐘樓塔頂 (案發地)", top: "15%", left: "45%", action: "goto:tower_top" }
+                { label: "🏰 鐘樓塔頂", top: "15%", left: "45%", action: "check_lock:tower_top" }, 
+                { label: "🏠 小木屋", top: "85%", left: "15%", action: "goto:cabin" }
             ],
             choices: [
                 { text: "📂 重看嫌疑人檔案", action: "goto:files" },
                 { text: "⚖️ 我已經知道犯人是誰了！", action: "pre_accuse" } 
+            ]
+        },
+        cabin: {
+            title: "小木屋",
+            image: "cabin.jpg", 
+            initText: contentData.descriptions.cabin,
+            hotspots: [], 
+            choices: [
+                { text: "🗣️ 與巴納比對話", action: "goto:chat_barnaby" },
+                { text: "👣 返回廣場", action: "goto:hub" }
+            ]
+        },
+        chat_barnaby: {
+            title: "對話：巴納比",
+            image: "face_barnaby.jpg", 
+            character: "巴納比",
+            initText: "「偵探，有什麼我可以幫忙的嗎？」",
+            choices: [
+                { text: "🔑 借用鐘樓鑰匙", action: "chat:barnaby_key" },
+                { text: "🗣️ 詢問關於史派克", action: "chat:barnaby_spark" },
+                { text: "🗣️ 詢問關於庫奇", action: "chat:barnaby_cookie" },
+                { text: "🗣️ 詢問關於魯道夫", action: "chat:barnaby_rudolph" },
+                { text: "💬 結束對話", action: "goto:cabin" }
             ]
         },
         tower_top: {
@@ -596,8 +709,6 @@ function trackGameEvent(eventName, params = {}) {
                 { text: "👣 返回廣場", action: "goto:hub" }
             ]
         },
-        
-        // --- 聊天場景 (優化對話與動機) ---
         chat_spark: {
             title: "對話：史派克",
             image: "face_spark.jpg",
@@ -631,8 +742,6 @@ function trackGameEvent(eventName, params = {}) {
                 { text: "💬 結束對話", action: "goto:barn" }
             ]
         },
-
-        // --- 結局流程 ---
         accuse_drama: {
             title: "指認時刻",
             image: "accuse_drama.jpg",
@@ -641,7 +750,7 @@ function trackGameEvent(eventName, params = {}) {
         },
         accuse_denial: {
             title: "指認錯誤",
-            image: "spark_denial_1.jpg", // 預設圖片，會被程式碼動態替換
+            image: "spark_denial_1.jpg", 
             initText: "",
             choices: []
         },
@@ -673,31 +782,43 @@ function trackGameEvent(eventName, params = {}) {
             title: "聖誕快樂",
             image: "santa_claus.jpg", 
             initText: "",
-            choices: [
-               // 這裡的選項會被動態替換
-            ]
+            choices: []
         }
     };
-// --- 3. 核心邏輯 ---
 
-    // --- 新增：點擊推進控制變數 ---
+    // --- 3. 核心邏輯 ---
+
     let dialogueQueue = [];
     let isDialogueRunning = false;
     let dialogueOnComplete = null;
     let dialogueTimer = null; 
     const clickArea = document.getElementById('game-container');
-    // --- 新增：點擊推進控制變數 End ---
-
-
+    
     function renderScene(id, isResuming = false) {
         if (!scenes[id]) return;
         const scene = scenes[id];
-        
         const isUpdate = (gameState.currentScene === id);
         
-        // 只有在場景改變時才執行大部分的更新
+        // --- 修改點 5：音樂場景切換 ---
+        if (id === 'start_screen' || id === 'hub' || id === 'lab' || id === 'kitchen' || id === 'barn') {
+            switchTrack('bgm-main');
+        } else if (id === 'accuse_drama') {
+            switchTrack('bgm-tension');
+        } else if (id === 'ending_confession' || id === 'ending_teamwork') {
+            switchTrack('bgm-emotional');
+        } else if (id === 'ending_santa_reveal' || id === 'ending_real_face') {
+            switchTrack('bgm-santa');
+        }
+
+        if (id === 'hub' && gameState.hasKey && gameState.sceneLogs['hub']) {
+            let log = gameState.sceneLogs['hub'];
+            log = log.replace(/<div class="bubble bubble-system"[^>]*>.*?看來沒有鑰匙是進不去的.*?<\/div>/g, '');
+            log = log.replace(/<div class="bubble bubble-system"[^>]*>.*?（拉了拉門把）.*?<\/div>/g, '');
+            gameState.sceneLogs['hub'] = log;
+        }
+
         if (!isUpdate || isResuming) {
-            gameState.currentScene = id; // 更新當前場景
+            gameState.currentScene = id;
             trackGameEvent('scene_view', {
                 scene_id: id,
                 scene_title: scene.title
@@ -706,7 +827,7 @@ function trackGameEvent(eventName, params = {}) {
             const header = document.getElementById('scene-title');
             const feedback = document.getElementById('feedback-area');
 
-            const statusContainer = document.getElementById('header-bar').querySelector('div:last-child');
+            const statusContainer = document.getElementById('status-display');
             let statusText = "搜查中";
             let statusIcon = "🎒";
             if (id === 'start_screen') {
@@ -727,17 +848,17 @@ function trackGameEvent(eventName, params = {}) {
             }
             
             statusContainer.innerHTML = `${statusIcon} 狀態: <span id="game-status" style="color:#4ecdc4">${statusText}</span>`;
-            
-            // 載入場景時，如果不是在對話中，則清除熱點並設置背景
             if (!isDialogueRunning) {
-                vis.innerHTML = '<div class="overlay-gradient"></div>'; // 清除熱點
-                vis.style.backgroundImage = `url('${scene.image}')`;
+                vis.innerHTML = '<div class="overlay-gradient"></div>';
+                vis.classList.add('fade-out');
+                setTimeout(() => {
+                    vis.style.backgroundImage = `url('${scene.image}')`;
+                    vis.classList.remove('fade-out'); 
+                }, 200);
             }
 
             header.innerText = scene.title;
-            
             if (gameState.sceneLogs[id]) {
-                // 如果是從存檔載入，直接恢復對話紀錄
                 feedback.innerHTML = gameState.sceneLogs[id];
             } else {
                 feedback.innerHTML = '';
@@ -746,7 +867,6 @@ function trackGameEvent(eventName, params = {}) {
                 }
             }
 
-            // 只有在非對話/非結尾動畫時才顯示熱點
             if (scene.hotspots && !isDialogueRunning && !id.startsWith('ending') && !id.startsWith('accuse')) {
                 scene.hotspots.forEach(spot => {
                     const btn = document.createElement('div');
@@ -754,7 +874,6 @@ function trackGameEvent(eventName, params = {}) {
                     btn.style.top = spot.top;
                     btn.style.left = spot.left;
                     btn.innerHTML = spot.label;
-                    // 修改：傳入 spot.label 以便 GA4 追蹤是點擊了哪個畫面熱點
                     btn.onclick = () => handleAction(spot.action, spot.label);
                     vis.appendChild(btn);
                 });
@@ -764,15 +883,11 @@ function trackGameEvent(eventName, params = {}) {
         renderButtons(scene);
         if (['lab', 'kitchen', 'barn', 'tower_top'].includes(id)) gameState.visited.add(id);
         
-        // 初始場景對話處理
         if (id === 'opening_frozen' && !gameState.visited.has('opening') && !isResuming) {
             gameState.visited.add('opening');
             runDialogueSequence([
-                // 修改：將原本 initText 的內容搬移至此，使其可以一句一句播放
                 {t: "在一處溫暖的木屋中，你低頭看著手中的金箔邀請函...", type: 'system'},
                 {t: "『致 傳奇偵探：今晚或許會有大事發生，請務必來聖誕村一敘。—— 聖誕老人』", type: 'system'},
-                
-                // 接續原本的劇情
                 {t: "你坐在溫暖的壁爐前，牆上的掛鐘正滴答作響。", type: 'system'},
                 {t: "秒針指向了 11:59 分 59 秒。", type: 'system'},
                 {t: "原本該響起的整點鐘聲... 卻沒有出現。", type: 'system'},
@@ -780,7 +895,7 @@ function trackGameEvent(eventName, params = {}) {
             ]);
         }
         
-        saveGameState(); // 每次渲染場景或狀態更新都保存
+        saveGameState();
     }
 
     function renderButtons(scene) {
@@ -789,7 +904,6 @@ function trackGameEvent(eventName, params = {}) {
         if (scene.choices) {
             scene.choices.forEach(c => {
                 if (c.action.startsWith('chat:') && gameState.usedActions.has(c.action)) return;
-                
                 if (c.action.startsWith('ending:team_') && gameState.usedActions.has(c.action)) return;
 
                 const btn = document.createElement('button');
@@ -798,7 +912,7 @@ function trackGameEvent(eventName, params = {}) {
                 if (c.action === 'reload' || c.action === 'ending:fix_gear' || c.action === 'start_game') {
                     btn.className += ' replay-btn';
                 }
-                
+     
                 btn.innerHTML = c.text.startsWith('🔹') || c.text.startsWith('⚙️') || c.text.startsWith('🕒') || c.text.startsWith('👀') || c.text.startsWith('🔍') || c.text.startsWith('🎮') || c.text.startsWith('🔄') ? c.text : "🔹 " + c.text;
                 btn.onclick = () => handleAction(c.action, c.text);
                 menu.appendChild(btn);
@@ -819,7 +933,6 @@ function trackGameEvent(eventName, params = {}) {
             else if (name && name.includes('庫奇')) div.classList.add('char-cookie');
             else if (name && name.includes('魯道夫')) div.classList.add('char-rudolph');
             else if (name && name.includes('巴納比')) div.classList.add('char-barnaby');
-            
             div.innerHTML = `<span class="char-name">${name}</span>${text}`;
         } else if (type === 'player') {
             div.className = 'bubble bubble-player';
@@ -842,27 +955,22 @@ function trackGameEvent(eventName, params = {}) {
         gameState.sceneLogs[gameState.currentScene] += div.outerHTML;
 
         requestAnimationFrame(() => { feedback.scrollTop = feedback.scrollHeight; });
-        saveGameState(); // 對話氣泡新增後也保存
+        saveGameState();
     }
 
-    // --- 新增：對話推進邏輯 ---
     function processNextDialogueLine() {
-        // **[確保清除舊的計時器，無論是自動還是點擊觸發，確保每次只處理一個元件]**
-        clearTimeout(dialogueTimer); 
-
+        clearTimeout(dialogueTimer);
         if (dialogueQueue.length > 0) {
             const line = dialogueQueue.shift();
             addBubble(line.t, line.type || 'system', line.name);
             
             if (dialogueQueue.length > 0) {
-                // 如果隊列中還有對話，設定新的自動播放計時器
-                dialogueTimer = setTimeout(processNextDialogueLine, 2200); // 延遲自動播放
+                dialogueTimer = setTimeout(processNextDialogueLine, 2200);
             } else {
-                // 對話結束
                 isDialogueRunning = false;
                 clickArea.removeEventListener('click', processNextDialogueLine);
                 if (dialogueOnComplete) {
-                    setTimeout(dialogueOnComplete, 800); // 等待最後一個泡泡顯示完畢
+                    setTimeout(dialogueOnComplete, 800);
                 } else {
                     renderScene(gameState.currentScene);
                 }
@@ -871,8 +979,7 @@ function trackGameEvent(eventName, params = {}) {
     }
 
     function runDialogueSequence(lines, onComplete) {
-        // 清除任何舊的自動播放
-        clearTimeout(dialogueTimer); 
+        clearTimeout(dialogueTimer);
         clickArea.removeEventListener('click', processNextDialogueLine);
         
         const menu = document.getElementById('interaction-bar');
@@ -882,13 +989,9 @@ function trackGameEvent(eventName, params = {}) {
         isDialogueRunning = true;
         dialogueOnComplete = onComplete;
         
-        // 啟用點擊推進
         clickArea.addEventListener('click', processNextDialogueLine);
-        
-        // 立即顯示第一個對話並啟動自動播放/點擊模式
         processNextDialogueLine();
     }
-    // --- 新增：對話推進邏輯 End ---
 
     function playPrologueSequence() {
         renderScene('prologue');
@@ -897,7 +1000,7 @@ function trackGameEvent(eventName, params = {}) {
 
         runDialogueSequence([
             {t: "（碰！接待室的大門被撞開！）", type: "system"},
-            {t: "聖誕老人的助手長——巴納比，慌張地衝了進來，差點被地毯絆倒。", type: "system"},
+            {t: "聖誕老人的助手——巴納比，慌張地衝了進來，差點被地毯絆倒。", type: "system"},
             {t: "聖誕老人！大事不好了... 咦？你是？", type: "char", name: "巴納比"},
             {t: "啊！你是那封邀請函的... 偵探！感謝老天你在這裡！", type: "char", name: "巴納比"}, 
             {t: "聖誕老人不見了，而「永恆齒輪」剛剛被偷走！現在時間完全停止了！", type: "char", name: "巴納比"},
@@ -937,17 +1040,49 @@ function trackGameEvent(eventName, params = {}) {
     }
 
     function handleAccusation(name) {
+        // --- 步驟 1：計算玩家目前找到了幾個線索 ---
+        let evidenceCount = 0;
+        gameState.usedActions.forEach(action => {
+            // 只要動作是「查看 (check)」或「閱讀檔案 (read)」就算是一個證據
+            if (action.startsWith('check:') || action.startsWith('read:')) {
+                evidenceCount++;
+            }
+        });
+
+        // --- 步驟 2：自動計算遊戲總共有多少線索 (不要寫死數字) ---
+        
+        // A. 算出檔案 (profiles) 有幾個：直接算 profiles 裡面的名字數量
+        const totalProfiles = Object.keys(contentData.profiles).length;
+
+        // B. 算出線索 (clues) 有幾個：因為線索包在不同人名下，所以要轉個彎算
+        // 邏輯：把每一個角色底下的線索數量加總起來
+        const totalClues = Object.keys(contentData.clues).reduce((acc, key) => {
+            const val = contentData.clues[key];
+            // 如果裡面還有細項 (例如 spark 裡面有 engine 和 hook)，就加上細項的數量
+            if (typeof val === 'object') {
+                return acc + Object.keys(val).length;
+            }
+            // 如果只是單純一段文字，就加 1
+            return acc + 1;
+        }, 0);
+        
+        // 總數 = 檔案數 + 線索數
+        const totalEvidence = totalProfiles + totalClues; 
+        
+        // 算出百分比 (例如 0.75 代表 75%)
+        const coverageRate = (evidenceCount / totalEvidence).toFixed(2);
+
+        // --- 步驟 3：傳送數據給 GA4 ---
         if (name === '魯道夫') {
-            // 計算總遊玩時間 (秒)
             const durationSec = Math.floor((Date.now() - (gameState.startTime || Date.now())) / 1000);
-            
             trackGameEvent('game_complete', {
                 result: 'success',
                 mistakes: gameState.wrongAccusationCount,
-                total_duration_sec: durationSec, // [PM數據] 總耗時
-                total_actions: gameState.actionTotal // [教育數據] 總操作步數 (判斷是深思熟慮還是亂點)
+                total_duration_sec: durationSec, 
+                total_actions: gameState.actionTotal,
+                evidence_coverage: coverageRate, // 這是你的核心數據：證據完整度
+                evidence_count: evidenceCount    // 這是玩家實際找到的數量
             });
-
             renderScene('ending_confession');
             playConfessionSequence();
         } else {
@@ -955,10 +1090,11 @@ function trackGameEvent(eventName, params = {}) {
             gameState.lastAccused = name; 
             gameState.wrongAccusationCount++;
             trackGameEvent('accusation_failed', {
-            accused_char: name,
-            current_mistakes: gameState.wrongAccusationCount
-        });
-            
+                accused_char: name,
+                current_mistakes: gameState.wrongAccusationCount,
+                evidence_coverage: coverageRate, // 即使失敗，也紀錄他是憑多少證據猜的
+                evidence_count: evidenceCount
+            });
             if (isSamePerson) {
                 playAngryDenialSequence(name);
             } else {
@@ -972,7 +1108,6 @@ function trackGameEvent(eventName, params = {}) {
     }
 
     function playAngryDenialSequence(name) {
-        // 設定憤怒/第二次指認的圖片
         if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_2.jpg';
         else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_2.jpg';
 
@@ -1005,7 +1140,6 @@ function trackGameEvent(eventName, params = {}) {
     }
 
     function playDenialSequence(name) {
-        // 設定初次指認的圖片
         if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.jpg';
         else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.jpg';
 
@@ -1041,7 +1175,6 @@ function trackGameEvent(eventName, params = {}) {
     }
 
     function playInterruptedDenialSequence(name) {
-        // 雖然是遊戲中的第二次錯誤指認，但對該角色是第一次，所以使用第一張圖
         if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.jpg';
         else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.jpg';
 
@@ -1063,11 +1196,9 @@ function trackGameEvent(eventName, params = {}) {
 
     function playAutoConfessionSequence() {
         document.getElementById('interaction-bar').innerHTML = '';
-        // 使用 runDialogueSequence 處理 "Wait!" 的對話，確保可以點擊推進
         runDialogueSequence([
             {t: "...等等！", type: "mystery"}
         ], () => {
-            // 對話結束後，顯示按鈕
             const menu = document.getElementById('interaction-bar');
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
@@ -1124,63 +1255,57 @@ function trackGameEvent(eventName, params = {}) {
     }
 
     function handleAction(actionStr, btnText) {
+        // --- 修改點 3：使用者互動即觸發音樂 (自動淡入) ---
+        tryInitMusic();
+        
         playSound('click');
-        // 點擊按鈕時，清除對話推進監聽
         clickArea.removeEventListener('click', processNextDialogueLine);
         isDialogueRunning = false;
 
-        // 清除計時器
         clearTimeout(dialogueTimer); 
 
-        // --- 數據追蹤更新 ---
-        gameState.actionTotal = (gameState.actionTotal || 0) + 1; // 累計操作次數
-        
+        // --- 修改點 1：限制線索只能點一次 ---
+        // 這裡加入了 return，所以如果玩家已經點過，就不會再顯示對話。
         const [type, target] = actionStr.split(':');
-
-        if (actionStr === 'open_survey') {
-            // 開啟你的 Google Form
-            window.open('https://forms.gle/7AExAzyq7ACQnaX57', '_blank');
-            return;
-        }
-        
-        if (actionStr === 'start_game') {
-            // [新增] 點擊開始遊戲，觸發 game_start
-            trackGameEvent('game_start', {
-                timestamp: Date.now()
-            });
-            renderScene('opening_frozen');
-            return;
-        }
-
         if (gameState.usedActions.has(actionStr)) {
-            // 即便已經看過，還是追蹤一下重複點擊，分析玩家是否卡關在找線索
             if (type === 'check' || type === 'read') {
                  trackGameEvent('revisit_clue', {
                     target_clue: target,
                     scene: gameState.currentScene
                 });
-                return;
+                return; // 加入了 return，符合你要求的「不能再重複顯示」
             }
         }
         
         gameState.usedActions.add(actionStr);
-        
-        // 詳細追蹤：區分是點擊 "按鈕" 還是 "畫面熱點"
-        // 如果 btnText 有包含 emoji (按鈕通常有)，我們假設它是選單；否則可能是熱點
+        gameState.actionTotal = (gameState.actionTotal || 0) + 1; 
+
         let interactionType = 'menu_button';
         if (btnText && (btnText.includes('🚀') || btnText.includes('🍩') || btnText.includes('📁'))) {
-            interactionType = 'visual_hotspot'; // 來自畫面熱點
+            interactionType = 'visual_hotspot';
         }
 
         trackGameEvent('player_choice', {
-            action_type: type,      // goto, check, chat
-            action_target: target,  // lab, engine
-            label: btnText || 'unknown', // 按鈕文字或熱點名稱
-            interaction_source: interactionType, // [PD分析重點] 區分互動來源
-            move_number: gameState.actionTotal   // [教育分析重點] 第幾步做的決定
+            action_type: type,      
+            action_target: target,  
+            label: btnText || 'unknown', 
+            interaction_source: interactionType, 
+            move_number: gameState.actionTotal   
         });
-
         saveGameState(); 
+
+        if (actionStr === 'open_survey') {
+            window.open('https://forms.gle/7AExAzyq7ACQnaX57', '_blank');
+            return;
+        }
+        
+        if (actionStr === 'start_game') {
+            trackGameEvent('game_start', { timestamp: Date.now() });
+            currentTrackId = 'bgm-main'; 
+            tryInitMusic(); // 確保開始遊戲時音樂會播放
+            renderScene('opening_frozen');
+            return;
+        }
 
         if (actionStr === 'play_prologue') {
             playPrologueSequence();
@@ -1188,7 +1313,7 @@ function trackGameEvent(eventName, params = {}) {
         }
 
         if (actionStr === 'reload') {
-            localStorage.removeItem(STORAGE_KEY); // 重玩時清除存檔
+            localStorage.removeItem(STORAGE_KEY);
             location.reload();
             return;
         }
@@ -1215,19 +1340,67 @@ function trackGameEvent(eventName, params = {}) {
             }
             runDialogueSequence([{t: text, type: 'system'}]);
         } 
+        else if (type === 'check_lock') {
+            if (target === 'tower_top') {
+                if (gameState.hasKey) {
+                    renderScene('tower_top');
+                } else {
+                    const feedback = document.getElementById('feedback-area');
+                    if (feedback.lastElementChild && feedback.lastElementChild.textContent.includes("看來沒有鑰匙")) {
+                        const bubbles = feedback.querySelectorAll('.bubble');
+                        const lastTwo = Array.from(bubbles).slice(-2);
+                        lastTwo.forEach(el => {
+                            el.classList.remove('shake');
+                            void el.offsetWidth; 
+                            el.classList.add('shake');
+                        });
+                        return; 
+                    }
+                    runDialogueSequence([
+                        {t: "（拉了拉門把）門鎖得死死的。", type: 'system'},
+                        {t: "看來沒有鑰匙是進不去的。應該去找「管理鑰匙的人」問問？", type: 'system'}
+                    ]);
+                }
+            }
+            return;
+        }
         else if (type === 'chat') {
-            // 將玩家的提問也納入 runDialogueSequence 的自動推進序列
             let chatLines = [];
-            
-            // 1. 加入玩家的提問
             if(btnText) {
                 chatLines.push({t: btnText, type: 'player'});
             }
-            
-            // 2. 準備 NPC 的回應
-            
-            // 史派克 (Red Herring Mode)
-            if (target === 'spark_alibi') {
+            if (target === 'barnaby_key') {
+                if (gameState.hasKey) {
+                    chatLines.push({t: "你已經拿到鑰匙了。", type: 'system'});
+                } else {
+                    gameState.hasKey = true;
+                    chatLines.push(
+                        {t: "當然可以，偵探。", type: 'char', name: '巴納比'},
+                        {t: "這鑰匙我一直掛在脖子上沒離身過，絕對沒人偷用過！", type: 'char', name: '巴納比'},
+                        {t: "（獲得了鐘樓大門鑰匙！現在可以進入塔頂了）", type: 'system'}
+                    );
+                }
+            }
+            else if (target === 'barnaby_spark') {
+                chatLines.push(
+                    {t: "史派克最近為了能源快發瘋了。", type: 'char', name: '巴納比'},
+                    {t: "他有個伸縮爪子理論上能抓到塔頂的東西，但那破機器漏油漏很兇，操作也不穩... 真的能拆卸精密齒輪嗎？", type: 'char', name: '巴納比'}
+                );
+            }
+            else if (target === 'barnaby_cookie') {
+                chatLines.push(
+                    {t: "庫奇氣我死不借他鑰匙，他曾大吼說『我自己想辦法進去』！", type: 'char', name: '巴納比'},
+                    {t: "但他沒有梯子，體型也不適合爬通風管... 除非他把薑餅疊起來當樓梯？哈哈。", type: 'char', name: '巴納比'}
+                );
+            }
+            else if (target === 'barnaby_rudolph') {
+                chatLines.push(
+                    {t: "魯道夫最近很反常，聽到飛行指令就會發抖。", type: 'char', name: '巴納比'},
+                    {t: "不過說到不靠梯子就能上塔頂... 全村好像也只有會飛的馴鹿做得到？", type: 'char', name: '巴納比'},
+                    {t: "啊！我不是在懷疑他啦！", type: 'char', name: '巴納比'}
+                );
+            }
+            else if (target === 'spark_alibi') {
                 chatLines.push(
                     {t: "我在做什麼？我在試圖拯救聖誕節的物流系統！", type: 'char', name: '史派克'},
                     {t: "這台引擎需要強大的動力源。我整晚都在計算數據，想辦法找替代能源...", type: 'char', name: '史派克'},
@@ -1243,11 +1416,9 @@ function trackGameEvent(eventName, params = {}) {
                 chatLines.push(
                     {t: "（史派克眼神游移了一下）那個？那只是個... 工業用的夾娃娃機。", type: 'char', name: '史派克'},
                     {t: "這是我的偉大發明！只要在 20 公尺內，我就能吸取任何金屬！", type: 'char', name: '史派克'},
-                    {t: "別碰它！很精密的... 而且上面都是油。", type: 'char', name: '史派克'} // 故意不說他沒用過，只說別碰，讓玩家自己發現油
+                    {t: "別碰它！很精密的... 而且上面都是油。", type: 'char', name: '史派克'} 
                 );
             }
-            
-            // 庫奇
             else if (target === 'cookie_alibi') {
                 chatLines.push(
                     {t: "我在 11:45 完成了藍色星塵甜甜圈的裝飾。", type: 'char', name: '庫奇'},
@@ -1265,30 +1436,26 @@ function trackGameEvent(eventName, params = {}) {
                     {t: "「以假亂真」是指糖霜的光澤感啦！你們偵探都這麼敏感嗎？", type: 'char', name: '庫奇'}
                 );
             }
-            
-            // 魯道夫 (疲憊 & 防衛)
             else if (target === 'rudolph_alibi') {
                 chatLines.push(
                     {t: "（魯道夫打了一個長長的哈欠）", type: 'system'},
                     {t: "從晚上十點熄燈後，我就一直在這裡睡覺。", type: 'char', name: "魯道夫"},
-                    {t: "聖誕節的飛行任務很重要，我必須儲備體力... 拜託，讓我多睡一會吧。", type: 'char', name: "魯道夫"} // 謊言：其實剛回來
+                    {t: "聖誕節的飛行任務很重要，我必須儲備體力... 拜託，讓我多睡一會吧。", type: 'char', name: "魯道夫"} 
                 );
             } else if (target === 'rudolph_suspect') {
                 chatLines.push(
                     {t: "我睡得很死，什麼都沒聽到，也沒看到。", type: 'char', name: "魯道夫"},
-                    {t: "也許你可以去問問那些還醒著的人？不要為難我這隻想睡覺的馴鹿了。", type: 'char', name: "魯道夫"} // 試圖置身事外
+                    {t: "也許你可以去問問那些還醒著的人？不要為難我這隻想睡覺的馴鹿了。", type: 'char', name: "魯道夫"} 
                 );
             } else if (target === 'rudolph_powder') {
                 chatLines.push(
                     {t: "粉末？...噢。", type: 'char', name: "魯道夫"},
                     {t: "大概是庫奇送點心來的時候弄得到處都是吧。你知道他那個人，動作總是很大。", type: 'char', name: "魯道夫"},
-                    {t: "這應該不犯法吧？沾到一點糖粉？", type: 'char', name: "魯道夫"} // 避重就輕
+                    {t: "這應該不犯法吧？沾到一點糖粉？", type: 'char', name: "魯道夫"} 
                 );
             } else {
                 chatLines.push({t: "...", type: 'char', name: 'NPC'});
             }
-
-            // 3. 執行包含玩家提問和 NPC 回應的完整序列
             runDialogueSequence(chatLines);
         }
         else if (type === 'pre_accuse') {
@@ -1352,14 +1519,14 @@ function trackGameEvent(eventName, params = {}) {
                 document.getElementById('feedback-area').innerHTML = '';
 
                 runDialogueSequence([
-                    {t: "Ho Ho Ho！做得好啊，各位！", type: 'santa'}, // 先出聲音
+                    {t: "Ho Ho Ho！做得好啊，各位！", type: 'santa'}, 
                     {t: "（大家驚訝地抬起頭，尋找聲音的來源...）", type: 'system'}
                 ], () => {
                       const menu = document.getElementById('interaction-bar');
                       const btn = document.createElement('button');
                       btn.className = 'choice-btn';
                       btn.innerText = "🔹 轉身看是誰？";
-                      btn.onclick = () => handleAction('ending:show_face'); // 再看臉
+                      btn.onclick = () => handleAction('ending:show_face'); 
                       menu.appendChild(btn);
                 });
             } else if (target === 'show_face') {
@@ -1371,7 +1538,6 @@ function trackGameEvent(eventName, params = {}) {
                     {t: "魯道夫，不需要獨自承擔一切。真正的聖誕魔法，從來不是禮物，而是彼此扶持的心。", type: 'santa'},
                     {t: "Merry Christmas！孩子們還在等著我們呢，上工囉！", type: 'santa'}
                 ], () => {
-                    // [新增] 追蹤玩家完整看完結局
                     trackGameEvent('ending_complete', {
                         total_duration: Math.floor((Date.now() - gameState.startTime) / 1000),
                         mistakes: gameState.wrongAccusationCount
@@ -1381,7 +1547,6 @@ function trackGameEvent(eventName, params = {}) {
                     const btn = document.createElement('button');
                     btn.className = 'choice-btn replay-btn';
                     btn.innerText = "🎬 完結";
-                    // 點擊後跳轉到完結畫面
                     btn.onclick = () => handleAction('goto:game_fin');
                     menu.appendChild(btn);
                 });
@@ -1389,47 +1554,40 @@ function trackGameEvent(eventName, params = {}) {
         }
     }
 
-    // --- 新增：顯示恢復進度選項 ---
     function showResumePrompt() {
         const vis = document.getElementById('visual-panel');
         const header = document.getElementById('scene-title');
         const feedback = document.getElementById('feedback-area');
         const menu = document.getElementById('interaction-bar');
         
-        // 確保停止任何自動推進
         clearTimeout(dialogueTimer); 
         clickArea.removeEventListener('click', processNextDialogueLine);
         isDialogueRunning = false;
-
-        // 清理並設置介面
         vis.innerHTML = '<div class="overlay-gradient"></div>';
-        vis.style.backgroundImage = `url('hub.jpg')`; // 中性背景
+        vis.style.backgroundImage = `url('hub.jpg')`; 
         header.innerText = "遊戲進度已找到";
         feedback.innerHTML = '<div class="bubble bubble-mystery" style="margin-top:20px; text-align:center;">偵探，你上次的搜查紀錄被保存了。<br>你要從上次離開的地方繼續，還是重新開始調查？</div>';
         feedback.scrollTop = feedback.scrollHeight;
         menu.innerHTML = '';
         
-        // 更新狀態列
-        document.getElementById('header-bar').querySelector('div:last-child').innerHTML = `⏳ 狀態: <span id="game-status" style="color:#d4af37">等待選擇</span>`;
+        document.getElementById('status-display').innerHTML = `⏳ 狀態: <span id="game-status" style="color:#d4af37">等待選擇</span>`;
 
-        // 繼續按鈕
         const resumeBtn = document.createElement('button');
         resumeBtn.className = 'choice-btn';
         resumeBtn.style.fontWeight = 'bold';
         resumeBtn.innerText = "🚀 繼續進度 (上次在：" + scenes[gameState.currentScene].title + ")";
         resumeBtn.onclick = () => {
-            // 恢復上次的場景
             renderScene(gameState.currentScene, true);
+            currentTrackId = 'bgm-main';
+            tryInitMusic();
         };
         menu.appendChild(resumeBtn);
 
-        // 重新開始按鈕
         const restartBtn = document.createElement('button');
         restartBtn.className = 'choice-btn replay-btn';
         restartBtn.innerText = "🔄 重新開始遊戲";
         restartBtn.onclick = () => {
-            localStorage.removeItem(STORAGE_KEY); // 清除存檔
-            // 重新初始化 gameState
+            localStorage.removeItem(STORAGE_KEY);
             gameState = {
                 visited: new Set(),
                 usedActions: new Set(),
@@ -1438,10 +1596,12 @@ function trackGameEvent(eventName, params = {}) {
                 wrongAccusationCount: 0,
                 lastAccused: null 
             };
-            renderScene('start_screen'); // [修改] 重新開始時回到標題畫面
-            // 這裡也需要重新觸發一次開場文字，因為是手動重置
+            currentTrackId = 'bgm-main';
+            tryInitMusic();
+            
+            renderScene('start_screen'); 
              runDialogueSequence([
-                {t: "平安夜的風雪呼嘯，眼前這棟透著暖光的小木屋，是這片銀白世界中唯一的避風港。", type: 'system'},
+                {t: "平安夜的風雪呼嘯，眼前這棟透著暖光的小木屋，是此次遠足的目的地。", type: 'system'},
                 {t: "您低頭看了一眼手中那封神秘的邀請函。", type: 'system'},
                 {t: "署名是那位傳說中的人物... 為何在最忙碌的今晚，特地邀請一位偵探前來？", type: 'system'},
                 {t: "懷著些許好奇，您踏上積雪的階梯，手搭上了厚重的木門。", type: 'system'}
@@ -1449,17 +1609,16 @@ function trackGameEvent(eventName, params = {}) {
         };
         menu.appendChild(restartBtn);
     }
-    // --- 4. 啟動遊戲 ---
+    
     window.onload = function() {
         if (loadGameState()) {
-            // 從存檔恢復
-            showResumePrompt(); 
+            showResumePrompt();
         } else {
-            // [修改] 首次啟動進入標題畫面
+            // 初始設定為 Main，但等待互動才播放
+            currentTrackId = 'bgm-main';
             renderScene('start_screen');
-            // --- 新增：開場氛圍文字序列 ---
             runDialogueSequence([
-                {t: "平安夜的風雪呼嘯，眼前這棟透著暖光的小木屋，是這片銀白世界中唯一的避風港。", type: 'system'},
+                {t: "平安夜的風雪呼嘯，眼前這棟透著暖光的小木屋，是此次遠足的目的地。", type: 'system'},
                 {t: "您低頭看了一眼手中那封神秘的邀請函。", type: 'system'},
                 {t: "署名是那位傳說中的人物... 為何在最忙碌的今晚，特地邀請一位偵探前來？", type: 'system'},
                 {t: "懷著些許好奇，您踏上積雪的階梯，手搭上了厚重的木門。", type: 'system'}
@@ -1485,7 +1644,6 @@ function trackGameEvent(eventName, params = {}) {
             menu.appendChild(btn);
         });
     }
-
 </script>
 <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; color: #666; font-size: 12px; pointer-events: none; z-index: 100;">
     Designed & Developed by jellyfishyjammy | Powered by Gemini AI
