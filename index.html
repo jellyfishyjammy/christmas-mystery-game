@@ -531,9 +531,7 @@
                 🔧 <b>職業：</b> 精靈發明家<br>
                 📏 <b>身高：</b> 35 顆螺絲帽高<br>
                 📋 <b>狀態：</b> 滿身機油，正在敲打機械。<br>
-                <hr style="border-color:#444;">
-                <b>【健康紀錄】</b> 手部神經顫抖（長期拿重物）。<span style="color:#ff3333">醫生建議：禁止精細作業。</span><br>
-                <b>【勤務紀錄】</b> 申請「夜間加班」研發電池。多次抱怨能源不足。
+                💪 <b>技能：</b> 將廢棄零件組裝成神奇機器的能力。
                 </div>`,
             cookie: `
                 <div class="profile-content" style="border-left:4px solid #33aaff; padding-left:10px;">
@@ -541,9 +539,7 @@
                 🍪 <b>職業：</b> 皇家大廚<br>
                 📏 <b>身高：</b> 20 層薑餅人高<br>
                 📋 <b>狀態：</b> 在廚房焦慮地踱步。<br>
-                <hr style="border-color:#444;">
-                <b>【健康紀錄】</b> 體重與體脂過高，膝蓋負重過大。<span style="color:#33aaff">醫生建議：避免爬樓梯與高處作業。</span><br>
-                <b>【勤務紀錄】</b> 申請「參觀鐘樓」被拒絕。目擊紀錄：在塔下徘徊測量尺寸。
+                💪 <b>技能：</b> 有能做出世界上最美味甜點的魔法。
                 </div>`,
             rudolph: `
                 <div class="profile-content" style="border-left:4px solid #8B4513; padding-left:10px;">
@@ -551,9 +547,7 @@
                 🦌 <b>職業：</b> 領航馴鹿<br>
                 📏 <b>身高：</b> 1.5 棵聖誕樹高<br>
                 📋 <b>狀態：</b> 躺在稻草堆中，蓋著厚毯子。<br>
-                <hr style="border-color:#444;">
-                <b>【健康紀錄】</b> 體溫持續過高 (Overheating)，鼻頭紅腫。<br>
-                <b>【勤務紀錄】</b> 連續三次「飛行訓練」缺席。<span style="color:#8B4513">備註：請假理由是「不想飛」。</span>
+                💪 <b>技能：</b> 擁有在暴風雪中精準導航的能力。
                 </div>`
         },
         descriptions: {
@@ -585,14 +579,14 @@
     const scenes = {
         start_screen: {
             title: "聖誕夜的消失齒輪",
-            image: "title_bg.jpg", 
+            image: "title_bg.webp", 
             initText: "", 
             choices: [{ text: "🚪 推開大門", action: "start_game" }]
         },
         game_fin: {
             title: "THE END",
-            image: "fin_bg.jpg", 
-            initText: "感謝您的遊玩！<br><br>聖誕村的時間再次流動，<br>這一切都歸功於您。<br><br>為了幫助我們做出更好的遊戲，<br>懇請大偵探花 1 分鐘填寫回饋！",
+            image: "fin_bg.webp", 
+            initText: "感謝您的遊玩！<br><br>聖誕村的時間再次流動，<br>這一切都歸功於您。<br><br>為了幫助我們做出更好的遊戲，<br>懇請大偵探花 2 分鐘填寫回饋！",
             choices: [
                 { text: "📋 填寫偵探回饋單", action: "open_survey" },
                 { text: "🔄 再玩一次", action: "reload" }
@@ -600,19 +594,19 @@
         },
         opening_frozen: {
             title: "11:59 的聖誕村",
-            image: "invitation.jpg", 
+            image: "invitation.webp", 
             initText: "",
-            choices: [{ text: "等待約定時間", action: "play_prologue" }]
+            choices: [{ text: "起身查看情況", action: "play_prologue" }]
         },
         prologue: {
             title: "聖誕老人的預感",
-            image: "barnaby_enter.jpg", 
+            image: "barnaby_enter.webp", 
             initText: "", 
             choices: [{ text: "接過人員名單", action: "goto:files" }]
         },
         files: {
             title: "嫌疑人檔案",
-            image: "files.jpg",
+            image: "files.webp",
             initText: "這是目前全聖誕村唯三沒有被「時間凍結」的人。根據巴納比的判斷，犯人一定就在其中。",
             hotspots: [
                 { label: "📁 檔案：史派克", top: "20%", left: "55%", action: "read:spark" },
@@ -623,7 +617,7 @@
         },
         hub: {
             title: "中央廣場",
-            image: "hub.jpg",
+            image: "hub.webp",
             initText: "【搜查任務啟動】<br>目前時間停止在 11:59。你必須完成以下目標：<br><br>1. 找出竊取「永恆齒輪」的犯人。<br>2. 掌握犯案手段以及能夠定罪的關鍵物理證據。",
             hotspots: [
                 { label: "🚀 實驗室", top: "40%", left: "15%", action: "goto:lab" },
@@ -639,7 +633,7 @@
         },
         cabin: {
             title: "小木屋",
-            image: "cabin.jpg", 
+            image: "cabin.webp", 
             initText: contentData.descriptions.cabin,
             hotspots: [], 
             choices: [
@@ -649,7 +643,7 @@
         },
         chat_barnaby: {
             title: "對話：巴納比",
-            image: "face_barnaby.jpg", 
+            image: "face_barnaby.webp", 
             character: "巴納比",
             initText: "「偵探，有什麼我可以幫忙的嗎？」",
             choices: [
@@ -662,7 +656,7 @@
         },
         tower_top: {
             title: "鐘樓塔頂",
-            image: "tower_top.jpg",
+            image: "tower_top.webp",
             initText: contentData.descriptions.tower_top,
             hotspots: [
                 { label: "🪟 檢查窗戶", top: "30%", left: "50%", action: "check:window_trace" },
@@ -672,46 +666,46 @@
         },
         lab: {
             title: "史派克的實驗室",
-            image: "lab.jpg",
+            image: "lab.webp",
             initText: contentData.descriptions.lab,
             hotspots: [
                 { label: "⚙️ 檢查引擎狀況", top: "50%", left: "50%", action: "check:engine" },
                 { label: "✋ 檢查奇怪的工具", top: "70%", left: "30%", action: "check:grappling_hook" }
             ],
             choices: [
-                { text: "🗣️ 質問史派克", action: "goto:chat_spark" },
+                { text: "🗣️ 與史派克對話", action: "goto:chat_spark" },
                 { text: "👣 返回廣場", action: "goto:hub" }
             ]
         },
         kitchen: {
             title: "庫奇的點心房",
-            image: "kitchen.jpg",
+            image: "kitchen.webp",
             initText: contentData.descriptions.kitchen,
             hotspots: [
                 { label: "🍩 檢查糖粉", top: "60%", left: "50%", action: "check:cookie_powder" },
                 { label: "📝 奇怪的草圖", top: "75%", left: "20%", action: "check:blueprint_sketch" }
             ],
             choices: [
-                { text: "🗣️ 質問庫奇", action: "goto:chat_cookie" },
+                { text: "🗣️ 與庫奇對話", action: "goto:chat_cookie" },
                 { text: "👣 返回廣場", action: "goto:hub" }
             ]
         },
         barn: {
             title: "馴鹿馬廄",
-            image: "barn.jpg",
+            image: "barn.webp",
             initText: contentData.descriptions.barn,
             hotspots: [
                 { label: "👄 觀察魯道夫", top: "50%", left: "60%", action: "check:donut_box" },
                 { label: "🛌 檢查毯子", top: "75%", left: "40%", action: "check:blanket_hidden" } 
             ],
             choices: [
-                { text: "🗣️ 質問魯道夫", action: "goto:chat_rudolph" },
+                { text: "🗣️ 與魯道夫對話", action: "goto:chat_rudolph" },
                 { text: "👣 返回廣場", action: "goto:hub" }
             ]
         },
         chat_spark: {
             title: "對話：史派克",
-            image: "face_spark.jpg",
+            image: "face_spark.webp",
             character: "史派克",
             choices: [
                 { text: "🕒 你今晚都在做什麼？", action: "chat:spark_alibi" },
@@ -722,7 +716,7 @@
         },
         chat_cookie: {
             title: "對話：庫奇",
-            image: "face_cookie.jpg",
+            image: "face_cookie.webp",
             character: "庫奇",
             choices: [
                 { text: "🕒 你今晚都在做什麼？", action: "chat:cookie_alibi" },
@@ -733,7 +727,7 @@
         },
         chat_rudolph: {
             title: "對話：魯道夫",
-            image: "face_rudolph.jpg",
+            image: "face_rudolph.webp",
             character: "魯道夫",
             choices: [
                 { text: "🕒 你今晚都在做什麼？", action: "chat:rudolph_alibi" },
@@ -744,43 +738,43 @@
         },
         accuse_drama: {
             title: "指認時刻",
-            image: "accuse_drama.jpg",
+            image: "accuse_drama.webp",
             initText: "", 
             choices: [] 
         },
         accuse_denial: {
             title: "指認錯誤",
-            image: "spark_denial_1.jpg", 
+            image: "spark_denial_1.webp", 
             initText: "",
             choices: []
         },
         ending_confession: {
             title: "沉重的真相",
-            image: "rudolph_cry.jpg",
+            image: "rudolph_cry.webp",
             initText: "", 
             choices: []
         },
         ending_teamwork: {
             title: "我們是團隊",
-            image: "teamwork.jpg",
+            image: "teamwork.webp",
             initText: "", 
             choices: []
         },
         ending_gear_fix: {
             title: "齒輪歸位",
-            image: "fix_gear.jpg",
+            image: "fix_gear.webp",
             initText: "",
             choices: []
         },
         ending_santa_reveal: {
             title: "熟悉的笑聲",
-            image: "santa_voice.jpg", 
+            image: "santa_voice.webp", 
             initText: "", 
             choices: [] 
         },
         ending_real_face: {
             title: "聖誕快樂",
-            image: "santa_claus.jpg", 
+            image: "santa_claus.webp", 
             initText: "",
             choices: []
         }
@@ -1108,8 +1102,8 @@
     }
 
     function playAngryDenialSequence(name) {
-        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_2.jpg';
-        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_2.jpg';
+        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_2.webp';
+        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_2.webp';
 
         renderScene('accuse_denial');
         gameState.sceneLogs['accuse_denial'] = '';
@@ -1140,8 +1134,8 @@
     }
 
     function playDenialSequence(name) {
-        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.jpg';
-        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.jpg';
+        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.webp';
+        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.webp';
 
         renderScene('accuse_denial');
         gameState.sceneLogs['accuse_denial'] = '';
@@ -1175,8 +1169,8 @@
     }
 
     function playInterruptedDenialSequence(name) {
-        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.jpg';
-        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.jpg';
+        if (name === '史派克') scenes['accuse_denial'].image = 'spark_denial_1.webp';
+        else if (name === '庫奇') scenes['accuse_denial'].image = 'cookie_denial_1.webp';
 
         renderScene('accuse_denial');
         gameState.sceneLogs['accuse_denial'] = '';
@@ -1358,7 +1352,7 @@
                     }
                     runDialogueSequence([
                         {t: "（拉了拉門把）門鎖得死死的。", type: 'system'},
-                        {t: "看來沒有鑰匙是進不去的。應該去找「管理鑰匙的人」問問？", type: 'system'}
+                        {t: "看來沒有鑰匙是進不去的。應該去小木屋找巴納比問問？", type: 'system'}
                     ]);
                 }
             }
@@ -1376,28 +1370,34 @@
                     gameState.hasKey = true;
                     chatLines.push(
                         {t: "當然可以，偵探。", type: 'char', name: '巴納比'},
-                        {t: "這鑰匙我一直掛在脖子上沒離身過，絕對沒人偷用過！", type: 'char', name: '巴納比'},
+                        {t: "這是全聖誕村唯一的鐘樓鑰匙！", type: 'char', name: '巴納比'},
+			{t: "我一直掛在脖子上沒離身過，絕對沒人偷用過！", type: 'char', name: '巴納比'},
                         {t: "（獲得了鐘樓大門鑰匙！現在可以進入塔頂了）", type: 'system'}
                     );
                 }
             }
             else if (target === 'barnaby_spark') {
                 chatLines.push(
-                    {t: "史派克最近為了能源快發瘋了。", type: 'char', name: '巴納比'},
-                    {t: "他有個伸縮爪子理論上能抓到塔頂的東西，但那破機器漏油漏很兇，操作也不穩... 真的能拆卸精密齒輪嗎？", type: 'char', name: '巴納比'}
+                    {t: "史派克現在處於一種「瘋狂科學家」的狀態。", type: 'char', name: '巴納比'},
+		    {t: "他很常喃喃自語說『距離成功只差那個核心』...", type: 'char', name: '巴納比'},
+		    {t: "而且他最近有跟我炫耀他的新發明『遠端抓取爪』，說什麼坐在椅子上就能拿到塔頂的東西...", type: 'char', name: '巴納比'},
+                    {t: "他該不會真的試了吧？", type: 'char', name: '巴納比'}
                 );
             }
             else if (target === 'barnaby_cookie') {
                 chatLines.push(
-                    {t: "庫奇氣我死不借他鑰匙，他曾大吼說『我自己想辦法進去』！", type: 'char', name: '巴納比'},
-                    {t: "但他沒有梯子，體型也不適合爬通風管... 除非他把薑餅疊起來當樓梯？哈哈。", type: 'char', name: '巴納比'}
+                    {t: "庫奇對那個鐘樓有種奇怪的執著。", type: 'char', name: '巴納比'},
+		    {t: "有一次我拒絕借他鐘樓鑰匙後，他竟然回我說『為了藝術，沒有路我也能造出路來』。", type: 'char', name: '巴納比'},
+		    {t: "我剛剛看到倉庫的長梯被搬動過...", type: 'char', name: '巴納比'},
+                    {t: "雖然我不覺得他敢爬那麼高，但他那時的眼神真的很嚇人。", type: 'char', name: '巴納比'}
                 );
             }
             else if (target === 'barnaby_rudolph') {
                 chatLines.push(
                     {t: "魯道夫最近很反常，聽到飛行指令就會發抖。", type: 'char', name: '巴納比'},
-                    {t: "不過說到不靠梯子就能上塔頂... 全村好像也只有會飛的馴鹿做得到？", type: 'char', name: '巴納比'},
-                    {t: "啊！我不是在懷疑他啦！", type: 'char', name: '巴納比'}
+                    {t: "平常這時候他都在做伸展操，但今晚他把自己埋在稻草堆深處，還一直發抖。", type: 'char', name: '巴納比'},
+		    {t: "不管我怎麼叫他，他都說『我辦不到、我不想去』。", type: 'char', name: '巴納比'},
+                    {t: "這種逃避責任的態度，該不會是做錯了什麼事吧？", type: 'char', name: '巴納比'}
                 );
             }
             else if (target === 'spark_alibi') {
@@ -1459,7 +1459,7 @@
             runDialogueSequence(chatLines);
         }
         else if (type === 'pre_accuse') {
-            if(!confirm("⚠️ 警告：指認機會僅有兩次。\n請確認你已掌握「犯案手段」與「關鍵證物」的連結。\n\n確定要現在指認嗎？")) return;
+            if(!confirm("⚠️ 警告：指認機會僅有2次。\n請確認你已掌握「犯案手段」與「關鍵證物」的連結。\n\n確定要現在指認嗎？")) return;
             playAccusationSequence(); 
         }
         else if (type === 'ending') {
@@ -1564,7 +1564,7 @@
         clickArea.removeEventListener('click', processNextDialogueLine);
         isDialogueRunning = false;
         vis.innerHTML = '<div class="overlay-gradient"></div>';
-        vis.style.backgroundImage = `url('hub.jpg')`; 
+        vis.style.backgroundImage = `url('hub.webp')`; 
         header.innerText = "遊戲進度已找到";
         feedback.innerHTML = '<div class="bubble bubble-mystery" style="margin-top:20px; text-align:center;">偵探，你上次的搜查紀錄被保存了。<br>你要從上次離開的地方繼續，還是重新開始調查？</div>';
         feedback.scrollTop = feedback.scrollHeight;
