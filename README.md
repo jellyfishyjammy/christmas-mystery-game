@@ -1,4 +1,4 @@
-# 聖誕夜的消失齒輪 (The Lost Gear of Christmas Eve)
+# 聖誕夜的謎 (The Mystery of Christmas Eve)
 
 這是一個基於 HTML/CSS/JavaScript 的互動式文字冒險（視覺小說）遊戲，由 [jellyfishyjammy] 開發。玩家將扮演一名偵探，在時間停止的聖誕村裡，找出造成一切的罪魁禍首。
 
